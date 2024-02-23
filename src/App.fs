@@ -10,21 +10,49 @@ open Components
 let universalApp (app: ExpressApp) =
     app.get("/", fun req res next ->
         let inputName =
-            match req.query?inputName with
-            | string as name -> Some name
-            | _ -> None
+            if req.query?inputName <> "" then Some (req.query?inputName)
+            else None
         promise {
             let! response = 
                 req 
-                |> gql "query { greeting { heading content } }" {||}
+                |> gql "query { greeting { heading content } }" {||} {||}
                 
             match response with
             | Ok response -> 
                 let greeting : Greeting = response?greeting
-                FrontPage ({| greeting = greeting; inputName = inputName |})
+                FrontPage ({| greeting = greeting |})
                 |> res.renderComponent
             | Error message -> next()
+        } |> ignore
+    )
 
+    app.get("/form-elements", fun req res next ->
+        promise {
+            let! response = 
+                req 
+                |> gql "query { name { name } }" {||} {| refresh = true; cache = false |}
+                
+            match response with
+            | Ok response -> 
+                let name : Name = response?name
+                FormElementPage ({| inputName = Some name?name |})
+                |> res.renderComponent
+            | Error message -> next()
+        } |> ignore
+    )
+
+    app.get("/middleware", fun req res next ->
+        promise {
+            let! response = 
+                req 
+                |> gql "query { name { name } }" {||} {| refresh = true; cache = false |}
+                
+            match response with
+            | Ok response -> 
+                let name : Name = response?name
+                MiddlewarePage ()
+                |> res.renderComponent
+            | Error message -> next()
         } |> ignore
     )
 
@@ -35,11 +63,17 @@ let universalApp (app: ExpressApp) =
         |> res.renderComponent
     )
 
-    app.post("/name", fun req res next ->
-        let inputName = req.body?inputName
-        consoleLog inputName
-        res.redirect("back")
+    app.post("/setName", fun req res next ->
+        promise {     
+            let inputName = req.body?inputName
+            let! response =
+                req |> gql "mutation ($inputName: String) 
+                           { setName(inputName: $inputName) { success } }" 
+                           {| inputName = inputName |} {||}
+            res.redirect("back")
+        } |> ignore
     )
+
 
     app.``use`` (fun (req: ExpressReq) (res: ExpressRes) next ->
         res.status 404 |> ignore

@@ -15,6 +15,7 @@ const cacheKey = (query, variables) =>
 export default ({ route }) => (req, res, next) => {
   req.gql = async (query, variables, options = {}) => {
     const cache = 'cache' in options ? options.cache : true;
+    const refresh = 'refresh' in options ? options.refresh : false;
     const isMutation = /^mutation/.test(query);
     const key = cacheKey(query, variables);
 
@@ -38,7 +39,7 @@ export default ({ route }) => (req, res, next) => {
     };
 
     // if we don't have a cached response, fetch from the server
-    const response = cachedResponse || (await fetchResponse());
+    const response = cachedResponse && !refresh ? cachedResponse : (await fetchResponse());
 
     // if we're caching and it's not a mutation and not the intial request, then store the response in the local query cache
     if (cache && !isMutation && !initialRequest) {

@@ -9,25 +9,6 @@ let consoleLog text: unit = jsNative
 [<Emit("fetch($0)")>]
 let fetch (url: string): JS.Promise<{| text: unit -> JS.Promise<string>; json: unit -> JS.Promise<obj> |}> = jsNative
 
-type ContentfulClientOptions = {
-    space: string
-    accessToken: string
-}
-
-type Entry = {
-    sys: {| id: string; contentType: {| sys: {| id: string |} |} |}
-    fields: {| hidden: bool |}
-    json: obj -> JS.Promise<obj>
-}
-
-type ContentfulClient = {
-    getEntries: obj -> JS.Promise<Entry[]>
-}
-
-type Contentful = {
-    createClient: ContentfulClientOptions -> ContentfulClient
-}
-
 let addOrdinal day =
     match day % 10 with
     | 1 when day % 100 <> 11 -> sprintf "%dst" day

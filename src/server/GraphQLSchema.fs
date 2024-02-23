@@ -1,14 +1,15 @@
 module GraphQLSchema
 
-open Fable.Core
 open Fable.Core.JsInterop
-open Global
 
 type Greeting = {
     heading: string
     content: string
 }
 
+type Name = {
+    name: string
+}
 
 let schemaString = "
   scalar JSON
@@ -18,20 +19,49 @@ let schemaString = "
     content: String
   }
 
+  type Name {
+    name: String
+  }
+
+  type SuccessResponse {
+    success: Boolean
+  }
+
   type Query {
     greeting: Greeting
-  }"
+    name: Name
+  }
+  
+  type Mutation {
+    setName(inputName: String): SuccessResponse
+  }
+  "
 
-let rootValueInitializer =
+let rootValueInitializer : obj =
     let greeting () =
         promise {
             let greeting = {
-                heading = "Welcome to Fex"; 
-                content = "Fex is a universal Express JavaScript web app framework using Fable, Fable.React, and Feliz. The same higher-order codebase can be used to render on the server and the client. It works by using both the `express` and `browser-express` npm packages, creating routes, middlware, and React components that can be used in both environments." 
+                heading = "Welcome to Fex"
+                content = "Fex is an architectural pattern for building web applications with Express in JavaScript, utilizing Fable, Fable.React, and Feliz. It's not a framework but an approach that emphasizes simplicity and flexibility. By leveraging express for server-side and browser-express for client-side operations, it allows developers to craft route handlers, middleware, and React components that seamlessly work across both environments. The goal is to simplify web development while giving developers the freedom to adapt their architecture as their application evolves to meet user needs."
             }
             return greeting
         }
 
-    {|
-        greeting = greeting;
-    |}
+    let setName (input: string) (req: obj) =
+        promise {
+            req?session?inputName <- input?inputName
+            return {| success = true |}
+        }
+
+    let name _ (req: obj) =
+        promise {
+            let inputName = req?session?inputName
+            if inputName = null then
+                let name = { name = "Anonymous" }
+                return name
+            else
+                let name = { name = inputName }
+                return name
+        }
+
+    {| greeting = greeting; setName = setName; name = name |}

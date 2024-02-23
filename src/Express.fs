@@ -20,13 +20,15 @@ type ExpressReq =
   abstract member secure : bool
   abstract member xhr : bool
   abstract member status : int
-  abstract member gql : string -> obj -> JS.Promise<obj>
+  abstract member gql : string -> obj -> obj -> JS.Promise<obj>
+  abstract member session : obj
 
 type ExpressRes =
   abstract member send : obj -> unit
   abstract member renderComponent : ReactElement -> unit
   abstract member status : int -> unit
   abstract member redirect : string -> unit
+  abstract member navigate : string -> unit
 
 type ExpressApp =
   abstract member get: string * (ExpressReq -> ExpressRes -> (obj -> unit) -> unit) -> unit
@@ -35,10 +37,10 @@ type ExpressApp =
   abstract member ``use``: (obj -> ExpressReq -> ExpressRes -> (unit -> unit) -> unit) -> unit
   abstract member ``use``: (ExpressReq -> ExpressRes -> (unit -> unit) -> unit) -> unit
 
-let gql (query: string) (variables: obj) (req: ExpressReq) : JS.Promise<Result<obj, string>> =
+let gql (query: string) (variables: obj) (options: obj) (req: ExpressReq)  : JS.Promise<Result<obj, string>> =
   promise {
     try
-      let! result = req.gql query variables
+      let! result = req.gql query variables options
       return Ok result
     with
     | ex -> return Error (sprintf "Error in query: %s" ex.Message)
