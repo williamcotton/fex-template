@@ -82,7 +82,29 @@ img {
 
 form {
   margin-bottom: 1em;
-  input.error {
-    border: 1px solid red;
+  label {
+    width: 3em;
+    align-self: center;
+  }
+  .form-group {
+    display: flex;
+    margin-bottom: 1em;
+  }
+  p.error {
+    color: red;
+    font-size: 0.8em;
+    margin-bottom: 0;
+    line-height: 1em;
+    align-self: center;
+  }
+  input[type='text'] {
+    border-radius: 0.25em;
+    margin-right: 0.5em;
+    font-size: 1em;
+    padding: 0.1em 0.25em;
+    border: 1px solid lightgray;
+    &.error {
+      border: 1px solid red;
+    }
   }
 }

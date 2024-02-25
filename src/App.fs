@@ -11,9 +11,6 @@ open Validus
 
 let universalApp (app: ExpressApp) =
     app.get("/", fun req res next ->
-        let inputName =
-            if req.query?inputName <> "" then Some (req.query?inputName)
-            else None
         promise {
             let! response = 
                 req 
@@ -66,6 +63,8 @@ let universalApp (app: ExpressApp) =
     
     app.post("/form-validation", fun req res next ->
         let requestBody = req.body :?> RequestBody
+        let inputName = requestBody.inputName
+        let inputEmail = requestBody.inputEmail
         
         let nameValidator fieldName =
             let msg = fun _ -> $"{fieldName} must be between 3 and 64 characters"
@@ -73,8 +72,8 @@ let universalApp (app: ExpressApp) =
 
         let validatedInput =  
             validate {
-                let! inputName = nameValidator "Name" "inputName" requestBody.inputName
-                and! inputEmail = nameValidator "Email address" "inputEmail" requestBody.inputEmail
+                let! inputName = nameValidator "Name" "inputName" inputName
+                and! inputEmail = nameValidator "Email address" "inputEmail" inputEmail
                 return {
                     inputName = inputName
                     inputEmail = inputEmail

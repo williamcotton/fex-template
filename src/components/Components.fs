@@ -93,9 +93,11 @@ let FrontPage(props: {| greeting : Greeting |}) =
 
         Html.h3 "Universal Route Handlers"
 
-        Html.p "Fex enables efficient server-side rendering of static HTML through simple route handlers, GraphQL queries, and React components. This initial rendering delivers fast load times. The same code also powers client-side interactions without full page reloads, akin to single-page applications, but with route handlers serving as the controller."
+        Html.p "Fex enables efficient server-side rendering of static HTML through simple route handlers, data queries, and React components. This initial rendering delivers fast load times."
+        
+        Html.p "Meanwhile, the same route handlers and components power client-side interactions without full page reloads allowing for all of the benefits of interactive single-page applications."
 
-        Html.p "Example of a universal route handler:"
+        Html.p "Here's an example of a universal route handler:"
 
         CodeBlock {| 
             lang = "fsharp"; code =
@@ -116,9 +118,11 @@ let FrontPage(props: {| greeting : Greeting |}) =
 )
 """     |}
 
+        Html.p "What underlies this functionality is that `res.renderComponent` and `req.gql` are attached to the request and response objects by parallel middleware. These middleware have separate implementations for the server and the browser but offer the same typed interface."
+
         Html.h3 "Feliz React Components"
 
-        Html.p "Components are crafted in F# using Feliz, allowing for server-rendered HTML and client-side interactivity. Here's an example of a counter component:"
+        Html.p "React components can be crafted in F# using Feliz, allowing for server-rendered HTML and client-side interactivity. Here's an example of a counter component, which should look very familiar to a React developer:"
 
         Counter()
 
@@ -146,7 +150,7 @@ let Counter() =
 
         Html.h3 "Link Elements"
 
-        Html.p "Navigation is managed by React components, facilitating client-side routing that mimics a single-page application while ensuring server-side handling of initial requests for SEO and interactivity before JavaScript loads."
+        Html.p "Navigation is managed by React components, facilitating client-side routing that operates as a single-page application with dynamic data fetching. At the same time the Fex architectural pattern ensures the server-side rendering of the components."
 
         Html.p "Example navigation bar component:"
 
@@ -171,7 +175,7 @@ let FormElementPage(props: {| inputName : string option |}) =
     React.fragment [
         Html.h2 "Form Elements"
 
-        Html.p "Forms integrate seamlessly, functioning on both client and server sides, enabling interactions without page reloads. The server also handles form submissions, ensuring functionality even without JavaScript."
+        Html.p "Forms integrate seamlessly, functioning on both client and server sides, enabling interactions without page reloads. The server also handles these form submissions, ensuring functionality even without JavaScript."
 
         Html.p "Example form component and handler:"
 
@@ -230,9 +234,9 @@ let MiddlewarePage() =
 
         Html.p "Middleware is a powerful tool for managing requests and responses. It can be used to handle errors, parse requests, and manage sessions. Middleware can also be used to manage the flow of requests and responses, allowing for a wide range of customizations."
 
-        Html.p "With the Fex architectural pattern parallel middleware is used to allow for higher-order route handlers and components."
+        Html.p "With the Fex architectural pattern, parallel middleware is used to allow for environment agnostic route handlers and components."
 
-        Html.p "For example, our GraphQL server-side middleware makes a direct call to the GraphQL schema and root value."
+        Html.p "For example, our GraphQL server-side middleware directly makes a call to the GraphQL service."
 
         CodeBlock {| lang = "javascript"; code =
 """export default ({ schema, rootValue }) => (req, res, next) => {
@@ -263,7 +267,7 @@ let MiddlewarePage() =
 """ 
         |}
 
-        Html.p "Whereas the client-side middleware makes a call to the server-side middleware, which in turn makes a call to the GraphQL server."
+        Html.p "Whereas the client-side middleware fetches from the server, which in turn makes a call to the GraphQL service."
 
         CodeBlock {| lang = "javascript"; code =
 """
@@ -301,16 +305,18 @@ export default ({ route }) => (req, res, next) => {
 """ 
         |}
 
-        Html.p "Together this allows for a call to req.gql to be agnostic to the server-side and client-side middleware, allowing for a consistent approach to handling GraphQL queries and mutations."
+        Html.p "Together this allows for a call to `req.gql` to offer the same interface for both the server-side and client-side middleware. In our example this allows for a consistent approach to handling GraphQL queries and mutations."
 
         req.Link {| href = "/form-validation"; children = "Next: Form Validation" |}
     ]
 
 [<ReactComponent>]
-let FormValidationPage(props: {| errors : obj; requestBody : obj |})  =
+let FormValidationPage(props: {| errors : Map<string, string list>; requestBody : RequestBody |})  =
     let req = React.useContext requestContext
-    let errors = props.errors :?> Map<string, string> // Assuming errors is a Map with the field name as key and error message as value
-    let requestBody = props.requestBody :?> RequestBody // Cast requestBody to the RequestBody type
+    let errors = props.errors // Assuming errors is a Map with the field name as key and error message as value
+    let requestBody = props.requestBody // Cast requestBody to the RequestBody type
+    let inputName = requestBody.inputName
+    let inputEmail = requestBody.inputEmail
 
     React.fragment [
         Html.h2 "Form Validation"
@@ -318,8 +324,20 @@ let FormValidationPage(props: {| errors : obj; requestBody : obj |})  =
         Html.p "Form validation is a critical part of any web application. It ensures that the data submitted by the user is accurate and secure. Fex provides a simple and flexible approach to form validation based on the built-in Result types in F#."
 
         req.Form {| action = "/form-validation"; method = "post"; children = [
-            textInputFieldWithError "inputName" "Name" requestBody.inputName errors
-            textInputFieldWithError "inputEmail" "Email" requestBody.inputEmail errors
+            Html.div [
+                prop.className "form-group"
+                prop.children [
+                    Html.label [ prop.htmlFor "inputName"; prop.text "Name" ]
+                    textInputFieldWithError "inputName" "Name" inputName errors
+                ]
+            ]
+            Html.div [
+                prop.className "form-group"
+                prop.children [
+                    Html.label [ prop.htmlFor "inputEmail"; prop.text "Email" ]
+                    textInputFieldWithError "inputEmail" "Email" inputEmail errors
+                ]
+            ]
             Html.input [ prop.type' "submit"; prop.key "submit"; prop.value "Submit" ]
         ] |}
 
@@ -329,5 +347,40 @@ let FormValidationPage(props: {| errors : obj; requestBody : obj |})  =
         match isFormSuccessfullySubmitted with
         | true -> Html.p "Form submitted successfully"
         | _ -> null
+
+        Html.p "F# is an excellent choice when it comes to validating form data. It's a functional-first language that provides a powerful type system and a rich set of libraries for working with data. Below is an example using the Validus NuGet package."
+
+        CodeBlock {| lang = "fsharp"; code =
+"""app.post("/form-validation", fun req res next ->
+    let requestBody = req.body :?> RequestBody
+    let inputName = requestBody.inputName
+    let inputEmail = requestBody.inputEmail
+    
+    let nameValidator fieldName =
+        let msg = fun _ -> $"{fieldName} must be between 3 and 64 characters"
+        Check.WithMessage.String.betweenLen 3 64 msg
+
+    let validatedInput =  
+        validate {
+            let! inputName = nameValidator "Name" "inputName" inputName
+            and! inputEmail = nameValidator "Email address" "inputEmail" inputEmail
+            return {
+                inputName = inputName
+                inputEmail = inputEmail
+            }
+        }
+
+    let errors = 
+        match validatedInput with
+        | Ok validInput -> Map.empty
+        | Error e -> e |> ValidationErrors.toMap
+
+    FormValidationPage ({| errors = errors; requestBody = requestBody |})
+    |> res.renderComponent
+)"""    |}
+
+        Html.p "Again, since we're using the Fex architectural pattern we can turn off JavaScript in our web browsers and have the exact same experience."
+
+        Html.p "Take a look in w3m, links, or lynx and you'll see that the form still works and the page still updates, allowing for the easy creation of a TUI web application!"
     ]
 

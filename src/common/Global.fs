@@ -46,13 +46,14 @@ let formatDateString inputDate =
     let dayWithOrdinal = addOrdinal parsedDate.Day
     sprintf "%s %s, %d" monthName dayWithOrdinal parsedDate.Year
 
-let textInputFieldWithError fieldName placeholder (defaultValue: string) (errors : Map<string,string>) =
+let textInputFieldWithError fieldName placeholder (defaultValue: string) (errors : Map<string,string list>) =
+    let flattenedErrors = errors |> Map.map(fun k v -> String.concat " " v)
     let hasError fieldName = errors.ContainsKey(fieldName)
-    let getError fieldName = if hasError fieldName then errors.[fieldName] else ""
+    let getError fieldName = if hasError fieldName then flattenedErrors.[fieldName] else ""
     if hasError fieldName then 
         React.fragment [
             Html.input [ prop.type' "text"; prop.key fieldName; prop.name fieldName; prop.placeholder placeholder; prop.className "error"; (prop.defaultValue defaultValue) ]
-            Html.p [ prop.text (getError fieldName) ]
+            Html.p [ prop.text (getError fieldName); prop.className "error"]
         ]
     else
         Html.input [ prop.type' "text"; prop.key fieldName; prop.name fieldName; prop.placeholder placeholder; (prop.defaultValue defaultValue) ]

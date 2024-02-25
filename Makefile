@@ -16,6 +16,10 @@ fonts:
 	mkdir -p build
 	cp -r src/fonts/* build/
 
+images:
+	mkdir -p build
+	cp -r src/images/* build/
+
 .env:
 	cp default.env .env
 
