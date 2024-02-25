@@ -1,6 +1,7 @@
 module Global
 
 open Fable.Core
+open Feliz
 open System
 
 [<Emit("console.log($0)")>]
@@ -8,6 +9,13 @@ let consoleLog text: unit = jsNative
 
 [<Emit("fetch($0)")>]
 let fetch (url: string): JS.Promise<{| text: unit -> JS.Promise<string>; json: unit -> JS.Promise<obj> |}> = jsNative
+
+[<Emit("$0 === undefined")>]
+let isUndefined (x: 'a) : bool = jsNative
+
+[<Emit("undefined")>]
+let undefined : obj = jsNative
+
 
 let addOrdinal day =
     match day % 10 with
@@ -37,3 +45,17 @@ let formatDateString inputDate =
     let monthName = monthNames parsedDate.Month
     let dayWithOrdinal = addOrdinal parsedDate.Day
     sprintf "%s %s, %d" monthName dayWithOrdinal parsedDate.Year
+
+let textInputFieldWithError fieldName placeholder (defaultValue: string) (errors : Map<string,string>) =
+    let hasError fieldName = errors.ContainsKey(fieldName)
+    let getError fieldName = if hasError fieldName then errors.[fieldName] else ""
+    if hasError fieldName then 
+        React.fragment [
+            Html.input [ prop.type' "text"; prop.key fieldName; prop.name fieldName; prop.placeholder placeholder; prop.className "error"; (prop.defaultValue defaultValue) ]
+            Html.p [ prop.text (getError fieldName) ]
+        ]
+    else
+        Html.input [ prop.type' "text"; prop.key fieldName; prop.name fieldName; prop.placeholder placeholder; (prop.defaultValue defaultValue) ]
+
+[<Emit("Object.keys($0).every(key => $0[key] === '' || $0[key] === null || $0[key] === undefined)")>]
+let inline isObjEmpty (requestBody: obj) : bool = jsNative

@@ -30,15 +30,17 @@ export default ({ app, appLayout }) =>
     const Form = (props) => {
       const onSubmit = (e) => {
         e.preventDefault();
-        const body = serialize(e.target, { hash: true });
+        const body = serialize(e.target, { hash: true, empty: true });
         app.submit(e.target.action, e.target.method, body);
       };
       const mergedProps = { onSubmit, ...props };
       const { children } = mergedProps;
       delete mergedProps.children;
+      mergedProps.key = mergedProps.action;
       const formElements = [].concat(children);
       formElements.push(
         React.createElement("input", {
+          key: "csrf",
           type: "hidden",
           name: "_csrf",
           value: req.csrf,

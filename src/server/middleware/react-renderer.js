@@ -20,6 +20,7 @@ export default ({ appLayout }) =>
       const formElements = [].concat(children);
       formElements.push(
         React.createElement("input", {
+          key: "csrf",
           type: "hidden",
           name: "_csrf",
           value: req.csrf,

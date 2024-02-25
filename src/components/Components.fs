@@ -4,11 +4,16 @@ open Feliz
 open GraphQLSchema
 open Fable.Core
 open Express
+open Global
 
 [<Import("default", "highlight.js")>]
 let highlightjs : {| highlight: string -> obj -> {| value : string |} |} = jsNative
 
 let requestContext = React.createContext(name="Request")
+
+type RequestBody =
+    { inputName: string
+      inputEmail: string }
 
 [<ReactComponent>]
 let AppLayout (props: {| content: ReactElement; req: ExpressReq |}) =
@@ -205,10 +210,10 @@ let FormElementPage(props: {| inputName : string option |}) =
         | Some name -> (Html.p ("Hello, " + name + "!"))
         | None -> Html.p "Please enter your name:"
 
-        Html.p [req.Form {| action = "/setName"; method = "post"; children = [
-            Html.input [ prop.type' "text"; prop.name "inputName"; prop.placeholder "Name" ]
-            Html.input [ prop.type' "submit"; prop.value "Submit" ]
-        ] |} ]
+        req.Form {| action = "/setName"; method = "post"; children = [
+            Html.input [ prop.type' "text"; prop.key "inputName"; prop.name "inputName"; prop.placeholder "Name" ]
+            Html.input [ prop.type' "submit"; prop.key "submit"; prop.value "Submit" ]
+        ] |}
 
         Html.p "If you disable JavaScript in your browser, form submissions will continue to work and update the state of the page, albeit with the obvious need for a page reload."
 
@@ -230,24 +235,27 @@ let MiddlewarePage() =
         Html.p "For example, our GraphQL server-side middleware makes a direct call to the GraphQL schema and root value."
 
         CodeBlock {| lang = "javascript"; code =
-"""export default ({ schema, rootValue }) =>
-  (req, res, next) => {
+"""export default ({ schema, rootValue }) => (req, res, next) => {
     req.gql = async (query, variables) => {
-      const isMutation = /^mutation/.test(query);
-      const key = cacheKey(query, variables);
+
+      // ... some code here to handle caching and other options
+
       const response = await graphql(schema, query, rootValue, req, variables);
-      if (!isMutation) res.cacheQuery(key, response);
+        
       const { data, errors } = response;
+
       if (errors) {
         const statusCode = errors[0].message === "NotFound" ? 404 : 500;
         throw new HTTPError(statusCode, errors[0].message);
       }
+
       req.dataQuery = {
         data,
         errors,
         query,
         variables,
       };
+
       return data;
     };
     next();
@@ -261,16 +269,8 @@ let MiddlewarePage() =
 """
 export default ({ route }) => (req, res, next) => {
   req.gql = async (query, variables, options = {}) => {
-    const cache = 'cache' in options ? options.cache : true;
-    const refresh = 'refresh' in options ? options.refresh : false;
-    const isMutation = /^mutation/.test(query);
-    const key = cacheKey(query, variables);
-
-    // if it's the initial page request or we're caching the query after further requests, check the server side query cache and the local query cache
-    const cachedResponse =
-      initialRequest || (cache && !initialRequest)
-        ? Object.assign(req.queryCache, localQueryCache)[key]
-        : false;
+    
+    // ... some code here to handle caching and other options
 
     const fetchResponse = async () => {
       const response = await fetch(route, {
@@ -285,30 +285,16 @@ export default ({ route }) => (req, res, next) => {
       return response.json()
     };
 
-    // if we don't have a cached response, fetch from the server
-    const response = cachedResponse && !refresh ? cachedResponse : (await fetchResponse());
+    const response = await fetchResponse()
 
-    // if we're caching and it's not a mutation and not the intial request, then store the response in the local query cache
-    if (cache && !isMutation && !initialRequest) {
-      localQueryCache[key] = response;
-    }
+    // ... some code here to handle caching and other options
 
-    const { data, errors } = response;
-
-    if (errors) {
-      const statusCode = errors[0].message === 'NotFound' ? 404 : 500;
-      throw new HTTPError(statusCode, errors[0].message);
-    }
-
-    // store the data, errors, query and variables on the request for other interested middleware, eg, event tracking for analytics
     req.dataQuery = {
       data,
       errors,
       query,
       variables,
     };
-
-    initialRequest = false;
 
     return data;
   };
@@ -317,5 +303,31 @@ export default ({ route }) => (req, res, next) => {
 
         Html.p "Together this allows for a call to req.gql to be agnostic to the server-side and client-side middleware, allowing for a consistent approach to handling GraphQL queries and mutations."
 
-        req.Link {| href = "/about"; children = "Back: About" |}
+        req.Link {| href = "/form-validation"; children = "Next: Form Validation" |}
     ]
+
+[<ReactComponent>]
+let FormValidationPage(props: {| errors : obj; requestBody : obj |})  =
+    let req = React.useContext requestContext
+    let errors = props.errors :?> Map<string, string> // Assuming errors is a Map with the field name as key and error message as value
+    let requestBody = props.requestBody :?> RequestBody // Cast requestBody to the RequestBody type
+
+    React.fragment [
+        Html.h2 "Form Validation"
+
+        Html.p "Form validation is a critical part of any web application. It ensures that the data submitted by the user is accurate and secure. Fex provides a simple and flexible approach to form validation based on the built-in Result types in F#."
+
+        req.Form {| action = "/form-validation"; method = "post"; children = [
+            textInputFieldWithError "inputName" "Name" requestBody.inputName errors
+            textInputFieldWithError "inputEmail" "Email" requestBody.inputEmail errors
+            Html.input [ prop.type' "submit"; prop.key "submit"; prop.value "Submit" ]
+        ] |}
+
+        let isFormSuccessfullySubmitted =
+            not (isObjEmpty requestBody) && Map.isEmpty errors
+
+        match isFormSuccessfullySubmitted with
+        | true -> Html.p "Form submitted successfully"
+        | _ -> null
+    ]
+

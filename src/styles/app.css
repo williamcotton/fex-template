@@ -2,7 +2,6 @@
 @import "code.css";
 @import "variables.css";
 @import "layout.css";
-@import "page.css";
 
 html,
 body,
@@ -79,4 +78,11 @@ b {
 
 img {
   max-width: 100%;
+}
+
+form {
+  margin-bottom: 1em;
+  input.error {
+    border: 1px solid red;
+  }
 }

@@ -11,9 +11,8 @@ class HTTPError extends Error {
 const cacheKey = (query, variables) =>
   `${query}-(${variables ? JSON.stringify(variables) : ""})`;
 
-export default ({ schema, rootValue }) =>
-  (req, res, next) => {
-    req.gql = async (query, variables) => {
+export default ({ schema, rootValue }) => (req, res, next) => {
+    req.gql = async (query, variables, options = {}) => {
       const isMutation = /^mutation/.test(query);
       const key = cacheKey(query, variables);
       const response = await graphql(schema, query, rootValue, req, variables);
