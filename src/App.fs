@@ -34,9 +34,20 @@ let universalApp (app: ExpressApp) =
             match response with
             | Ok response -> 
                 let name : Name = response?name
-                FormElementPage ({| inputName = Some name?name |})
+                FormElementPage ({| inputName = Some name.name |})
                 |> res.renderComponent
             | Error message -> next()
+        } |> ignore
+    )
+
+    app.post("/setName", fun req res next ->
+        promise {     
+            let inputName = req.body?inputName
+            let! response =
+                req |> gql "mutation ($inputName: String) 
+                           { setName(inputName: $inputName) { success } }" 
+                           {| inputName = inputName |} {||}
+            res.redirect("back")
         } |> ignore
     )
 
@@ -96,14 +107,33 @@ let universalApp (app: ExpressApp) =
         |> res.renderComponent
     )
 
-    app.post("/setName", fun req res next ->
-        promise {     
-            let inputName = req.body?inputName
-            let! response =
-                req |> gql "mutation ($inputName: String) 
-                           { setName(inputName: $inputName) { success } }" 
-                           {| inputName = inputName |} {||}
-            res.redirect("back")
+    // app.get("/weather", fun req res next ->
+    //     promise {
+    //         let! response = 
+    //             fetch "https://api.weather.gov/gridpoints/TOP/32,81/forecast"
+    //         let! json = response.json()
+    //         consoleLog json
+    //         let forecast : obj array = json?properties?periods
+    //         res.renderComponent(WeatherPage {| forecast = forecast |})
+    //     } |> ignore
+    // )
+    
+    app.get("/weather", fun req res next ->
+        promise {
+            let! json = 
+                req.fetchJson "https://api.weather.gov/gridpoints/TOP/32,81/forecast" {||} {||}
+            consoleLog json
+            let forecast : obj array = json?properties?periods
+            res.renderComponent(WeatherPage {| forecast = forecast |})
+        } |> ignore
+    )
+
+    app.get("/github_status", fun req res next ->
+        promise {
+            let! json = 
+                req.fetchJson "https://www.githubstatus.com/api/v2/summary.json" {||} {||}
+            let status : obj array = json?components
+            res.renderComponent(GithubStatusPage {| status = status |})
         } |> ignore
     )
 

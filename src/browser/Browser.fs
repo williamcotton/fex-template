@@ -18,6 +18,10 @@ let expressLinkMiddleware : unit -> unit = jsNative
 [<Import("default", "./middleware/graphql-client.js")>]
 let graphqlClientMiddleware : {| route : string |} -> unit = jsNative
 
+[<Import("default", "./middleware/fetch-client.js")>]
+let fetchClientMiddleware: obj -> unit = jsNative
+
+
 [<Emit("app.use($0)")>]
 let useMiddleware middleware: unit = jsNative
 
@@ -25,6 +29,7 @@ let app = express()
 useMiddleware(expressLinkMiddleware())
 useMiddleware(reactRendererMiddleware({| app = app; appLayout = AppLayout |}))
 useMiddleware(graphqlClientMiddleware({| route = "/graphql" |}))
+useMiddleware(fetchClientMiddleware())
 
 universalApp app
 

@@ -47,6 +47,10 @@ header {
       text-decoration: none;
       color: black;
     }
+
+    ul {
+      display: flex;
+    }
   }
 }
 

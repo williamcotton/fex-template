@@ -22,6 +22,7 @@ type ExpressReq =
   abstract member status : int
   abstract member gql : string -> obj -> obj -> JS.Promise<obj>
   abstract member session : obj
+  abstract member fetchJson : string -> obj -> obj -> JS.Promise<{| text: unit -> JS.Promise<string>; json: unit -> JS.Promise<obj> |}>
 
 type ExpressRes =
   abstract member send : obj -> unit

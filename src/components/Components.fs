@@ -2,6 +2,7 @@ module Components
 
 open Feliz
 open GraphQLSchema
+open Fable.Core.JsInterop
 open Fable.Core
 open Express
 open Global
@@ -30,6 +31,9 @@ let AppLayout (props: {| content: ReactElement; req: ExpressReq |}) =
                         Html.ul [
                             Html.li [
                                 Link {| href = "/about"; children = "About" |}
+                            ]
+                            Html.li [
+                                Link {| href = "/weather"; children = "Weather" |}
                             ]
                         ]
                     ]
@@ -384,3 +388,34 @@ let FormValidationPage(props: {| errors : Map<string, string list>; requestBody 
         Html.p "Take a look in w3m, links, or lynx and you'll see that the form still works and the page still updates, allowing for the easy creation of a TUI web application!"
     ]
 
+[<ReactComponent>]
+let WeatherPage(props: {| forecast : obj array|}) =
+    let req = React.useContext requestContext
+    React.fragment [
+        Html.h2 "Weather"
+        props.forecast
+        |> Array.map(fun (period: obj) ->
+            let detailedForecast : string = period?detailedForecast
+            Html.p detailedForecast
+        )
+        |> React.fragment
+    ]
+
+[<ReactComponent>]
+let GithubStatusPage(props: {| status : obj array |}) =
+    let req = React.useContext requestContext
+    React.fragment [
+        Html.h2 "GitHub Status"
+        props.status
+        |> Array.map(fun (status: obj) ->
+            let statusMessage : string = status?status
+            let name : string = status?name
+            let description : string = status?description
+            Html.div [
+                Html.h3 name
+                Html.p statusMessage
+                Html.p description
+            ]
+        )
+        |> React.fragment
+    ]

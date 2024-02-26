@@ -35,6 +35,9 @@ let reactRendererMiddleware : {| appLayout: {| content: ReactElement; req: Expre
 [<Import("default", "./middleware/graphql-client.js")>]
 let graphqlClientMiddleware : {| schema : obj; rootValue : obj |} -> unit = jsNative
 
+[<Import("default", "./middleware/fetch-client.js")>]
+let fetchClientMiddleware: obj -> unit = jsNative
+
 [<Import("default", "body-parser")>]
 let bodyParser : {| urlencoded: obj -> obj; json: obj -> obj |} = jsNative
 
@@ -73,6 +76,7 @@ useMiddleware(bodyParser.json())
 useMiddleware (csurf())
 useMiddlewareRoute "/graphql" (createHandler({| schema = schema.schema; rootValue = rootValue; graphiql = true; context = customContextFunction |}))
 useMiddleware(graphqlClientMiddleware({| schema = schema.schema; rootValue = rootValue |}));
+useMiddleware(fetchClientMiddleware())
 useMiddleware(expressLinkMiddleware({| defaultTitle = defaultTitle |}))
 useMiddleware(reactRendererMiddleware({| appLayout = AppLayout |}))
 
