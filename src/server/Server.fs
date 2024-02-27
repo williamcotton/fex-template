@@ -8,9 +8,6 @@ open Fable.Core.JsInterop
 open GraphQLSchema
 open Components
 
-[<Emit("process.env[$0]")>]
-let env (key : string) : string = jsNative
-
 [<Import("default", "express")>]
 let express : unit -> ExpressApp = jsNative
 
@@ -41,7 +38,6 @@ let fetchClientMiddleware: obj -> unit = jsNative
 [<Import("default", "body-parser")>]
 let bodyParser : {| urlencoded: obj -> obj; json: obj -> obj |} = jsNative
 
-
 [<Emit("app.use($0)")>]
 let useMiddleware middleware: unit = jsNative
 
@@ -51,13 +47,14 @@ let useMiddlewareRoute route middleware: unit = jsNative
 [<Emit("express.static($0)")>]
 let expressStatic (path : string): unit = jsNative
 
+[<Emit("process.env[$0]")>]
+let env (key: string) : string = jsNative
 let defaultTitle = env "DEFAULT_TITLE"
 let sessionSecret = env "SESSION_SECRET"
 let port = env "PORT"
 
 let schemaObject = graphqlSchemaBuilder {| schemaString = schemaString |}
 let schema = schemaObject :?> {| schema: obj; rootValue: obj |}
-
 let rootValue : obj = rootValueInitializer
 
 let customContextFunction ctx args =
@@ -73,7 +70,7 @@ useMiddleware(expressStatic("build"))
 useMiddleware(cookieSession({| name = "session"; sameSite = "lax"; secret = sessionSecret |}))
 useMiddleware(bodyParser.urlencoded({| extended = false |}))
 useMiddleware(bodyParser.json())
-useMiddleware (csurf())
+useMiddleware(csurf())
 useMiddlewareRoute "/graphql" (createHandler({| schema = schema.schema; rootValue = rootValue; graphiql = true; context = customContextFunction |}))
 useMiddleware(graphqlClientMiddleware({| schema = schema.schema; rootValue = rootValue |}));
 useMiddleware(fetchClientMiddleware())

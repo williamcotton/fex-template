@@ -54,4 +54,5 @@ export default () => (req, res, next) => {
     // No need to separate data and errors as we're not dealing with GraphQL specific responses
     return response;
   };
+  next();
 };

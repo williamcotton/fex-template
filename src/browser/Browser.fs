@@ -21,7 +21,6 @@ let graphqlClientMiddleware : {| route : string |} -> unit = jsNative
 [<Import("default", "./middleware/fetch-client.js")>]
 let fetchClientMiddleware: obj -> unit = jsNative
 
-
 [<Emit("app.use($0)")>]
 let useMiddleware middleware: unit = jsNative
 

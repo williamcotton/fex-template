@@ -136,7 +136,15 @@ let universalApp (app: ExpressApp) =
             res.renderComponent(GithubStatusPage {| status = status |})
         } |> ignore
     )
+    
+    app.get("/request-context", fun req res next ->
+        RequestContextPage () |> res.renderComponent
+    )
 
+    app.get("/request-response-cycle", fun req res next ->
+        RequestResponseCyclePage () |> res.renderComponent
+    )
+    
     app.``use`` (fun (req: ExpressReq) (res: ExpressRes) next ->
         res.status 404 |> ignore
         Html.div "This page isn't here!"
