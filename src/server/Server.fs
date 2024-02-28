@@ -7,6 +7,7 @@ open Express
 open Fable.Core.JsInterop
 open GraphQLSchema
 open Components
+open AnalyticsRouter
 
 [<Import("default", "express")>]
 let express : unit -> ExpressApp = jsNative
@@ -34,6 +35,9 @@ let graphqlClientMiddleware : {| schema : obj; rootValue : obj |} -> unit = jsNa
 
 [<Import("default", "./middleware/fetch-client.js")>]
 let fetchClientMiddleware: obj -> unit = jsNative
+
+[<Import("default", "./middleware/analytics.js")>]
+let analyticstMiddleware: {| analyticsRouter : obj; app : ExpressApp |} -> unit = jsNative
 
 [<Import("default", "body-parser")>]
 let bodyParser : {| urlencoded: obj -> obj; json: obj -> obj |} = jsNative
@@ -73,6 +77,7 @@ useMiddleware(bodyParser.json())
 useMiddleware(csurf())
 useMiddlewareRoute "/graphql" (createHandler({| schema = schema.schema; rootValue = rootValue; graphiql = true; context = customContextFunction |}))
 useMiddleware(graphqlClientMiddleware({| schema = schema.schema; rootValue = rootValue |}));
+useMiddleware(analyticstMiddleware({| analyticsRouter = analyticsRouter; app = app |}))
 useMiddleware(fetchClientMiddleware())
 useMiddleware(expressLinkMiddleware({| defaultTitle = defaultTitle |}))
 useMiddleware(reactRendererMiddleware({| appLayout = AppLayout |}))

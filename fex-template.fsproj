@@ -12,6 +12,7 @@
     <Compile Include="src/server/GraphQLSchema.fs" />
     <Compile Include="src/components/Components.fs" />
     <Compile Include="src/App.fs" />
+    <Compile Include="src/server/AnalyticsRouter.fs" />
     <Compile Include="src/server/Server.fs" />
     <Compile Include="src/browser/Browser.fs" />
   </ItemGroup>

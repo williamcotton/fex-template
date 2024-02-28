@@ -1,6 +1,6 @@
-const format = require('date-fns/format');
+import format from 'date-fns/format';
 
-module.exports = ({ analyticsRouter, app }) => {
+export default ({ analyticsRouter, app }) => {
   const analyticsPageview = () => {}; // ({ url, headers, ip, title }) => {};
   const analyticsEvent = () => {}; // ({ url, headers, ip, title, payload }) => {};
   const commonLogFormat = (req, res) => {
@@ -14,7 +14,7 @@ module.exports = ({ analyticsRouter, app }) => {
     } = req;
     const { statusCode } = res;
     const rawRequest = `${method.toUpperCase()} ${url} HTTP/${httpVersion}`;
-    const timestamp = format(new Date(), 'ddd, D MMM YYYY HH:mm:ss ZZ');
+    const timestamp = format(new Date(), "eee, d MMM yyyy HH:mm:ss zzzz");
     console.log(
       `${ip} - ${username || '-'} [${timestamp}] "${rawRequest}" ${
         statusCode || '-'
@@ -24,6 +24,7 @@ module.exports = ({ analyticsRouter, app }) => {
   };
 
   app.post('/analytics', (req, res) => {
+    console.log('analytics');
     const { headers, body, ip } = req;
     const { type, url, statusCode, method, ...params } = body;
     req.url = url;
@@ -47,6 +48,7 @@ module.exports = ({ analyticsRouter, app }) => {
 
   return (req, res, next) => {
     res.on('finish', () => {
+      console.log('finish');
       req.url = req.originalUrl;
       const { url, headers, ip } = req;
       commonLogFormat(req, res);

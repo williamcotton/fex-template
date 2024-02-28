@@ -1,13 +1,15 @@
 let initialRequest = true;
 
-module.exports = ({ analyticsRouter, fetch }) => {
+export default ({ analyticsRouter, fetch }) => {
   const analyticsPublish = async (type, req, res, params) => {
+    console.log('analyticsPublish', type);
     const {
       url,
       method,
       headers: { referer },
     } = req;
     const { statusCode } = res;
+    console.log('analyticsPublish', type, url, statusCode, method, params);
     const response = await fetch('/analytics', {
       method: 'POST',
       headers: {
@@ -18,7 +20,10 @@ module.exports = ({ analyticsRouter, fetch }) => {
       },
       body: JSON.stringify({ type, url, statusCode, method, ...params }),
     });
-    return response.json();
+    console.log('analyticsPublish', type, response);
+    const json = await response.json();
+    console.log('analyticsPublish', type, json);
+    return json;
   };
 
   return (req, res, next) => {
@@ -26,10 +31,13 @@ module.exports = ({ analyticsRouter, fetch }) => {
       // as this is also handled server-side, we don't want to track the initial request twice
       if (!initialRequest) {
         req.url = req.originalUrl;
-        res.pageview = (params) =>
+        res.pageview = params => {
+          console.log('analyticsPublish', 'pageview');
           analyticsPublish('pageview', req, res, params);
+        };
         res.event = (params) => analyticsPublish('event', req, res, params);
         analyticsRouter(req, res, () => {
+          console.log('analyticsPublish', 'log');
           analyticsPublish('log', req, res, {});
         });
       }
