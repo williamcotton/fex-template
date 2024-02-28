@@ -31,6 +31,7 @@ type ExpressRes =
   abstract member redirect : string -> unit
   abstract member navigate : string -> unit
   abstract member pageview : obj -> unit
+  abstract member event : obj -> unit
 
 type ExpressApp =
   abstract member get: string * (ExpressReq -> ExpressRes -> (obj -> unit) -> unit) -> unit

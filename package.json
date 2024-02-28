@@ -25,6 +25,7 @@
     "body-parser": "^1.20.2",
     "browser-express": "^4.7.0",
     "contentful": "^10.6.21",
+    "cookie-parser": "^1.4.6",
     "cookie-session": "^2.0.0",
     "csurf": "^1.11.0",
     "date-fns": "^3.3.1",

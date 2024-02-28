@@ -1,6 +1,6 @@
 let initialRequest = true;
 
-export default ({ analyticsRouter, fetch }) => {
+export default ({ analyticsRouter }) => {
   const analyticsPublish = async (type, req, res, params) => {
     console.log('analyticsPublish', type);
     const {
@@ -20,9 +20,7 @@ export default ({ analyticsRouter, fetch }) => {
       },
       body: JSON.stringify({ type, url, statusCode, method, ...params }),
     });
-    console.log('analyticsPublish', type, response);
     const json = await response.json();
-    console.log('analyticsPublish', type, json);
     return json;
   };
 
@@ -32,7 +30,6 @@ export default ({ analyticsRouter, fetch }) => {
       if (!initialRequest) {
         req.url = req.originalUrl;
         res.pageview = params => {
-          console.log('analyticsPublish', 'pageview');
           analyticsPublish('pageview', req, res, params);
         };
         res.event = (params) => analyticsPublish('event', req, res, params);

@@ -18,6 +18,9 @@ let csurf : obj -> unit = jsNative
 [<Import("default", "cookie-session")>]
 let cookieSession : {| name: string; sameSite: string; secret: string |} -> unit = jsNative
 
+[<Import("default", "cookie-parser")>]
+let cookieParser : obj -> unit = jsNative
+
 [<Import("createHandler", "graphql-http/lib/use/express")>]
 let createHandler : {| schema: obj; rootValue: obj; graphiql: bool; context : obj -> obj -> obj |} -> unit = jsNative
 
@@ -37,7 +40,7 @@ let graphqlClientMiddleware : {| schema : obj; rootValue : obj |} -> unit = jsNa
 let fetchClientMiddleware: obj -> unit = jsNative
 
 [<Import("default", "./middleware/analytics.js")>]
-let analyticstMiddleware: {| analyticsRouter : obj; app : ExpressApp |} -> unit = jsNative
+let analyticstMiddleware: {| analyticsRouter : obj; app : ExpressApp; analyticsPageview : obj -> unit; analyticsEvent : obj -> unit |} -> unit = jsNative
 
 [<Import("default", "body-parser")>]
 let bodyParser : {| urlencoded: obj -> obj; json: obj -> obj |} = jsNative
@@ -74,11 +77,12 @@ useMiddleware(expressStatic("build"))
 useMiddleware(cookieSession({| name = "session"; sameSite = "lax"; secret = sessionSecret |}))
 useMiddleware(bodyParser.urlencoded({| extended = false |}))
 useMiddleware(bodyParser.json())
+useMiddleware(cookieParser())
 useMiddleware(csurf())
 useMiddlewareRoute "/graphql" (createHandler({| schema = schema.schema; rootValue = rootValue; graphiql = true; context = customContextFunction |}))
 useMiddleware(graphqlClientMiddleware({| schema = schema.schema; rootValue = rootValue |}));
-useMiddleware(analyticstMiddleware({| analyticsRouter = analyticsRouter; app = app |}))
 useMiddleware(fetchClientMiddleware())
+useMiddleware(analyticstMiddleware({| analyticsRouter = analyticsRouter; app = app; analyticsPageview = analyticsPageviev; analyticsEvent = analyticsEvent |}))
 useMiddleware(expressLinkMiddleware({| defaultTitle = defaultTitle |}))
 useMiddleware(reactRendererMiddleware({| appLayout = AppLayout |}))
 

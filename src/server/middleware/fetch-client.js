@@ -12,9 +12,7 @@ const cacheKey = (url, options) =>
 export default () => (req, res, next) => {
   req.fetchJson = async (url, options = {}, cacheOptions = {}) => {
     try {
-      console.log(url, options);
       const response = await fetch(url, options);
-      console.log(response);
       if (!response.ok) {
         throw new HTTPError(
           response.status,
@@ -27,6 +25,13 @@ export default () => (req, res, next) => {
       // Generate a cache key and cache the response data unconditionally
       const key = cacheKey(url, options);
       res.cacheQuery(key, data);
+
+    req.dataQuery = {
+      type: "fetch",
+      data,
+      query: url,
+      variables: options,
+    };
 
       return data;
     } catch (error) {

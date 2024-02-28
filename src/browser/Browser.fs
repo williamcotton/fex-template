@@ -36,6 +36,7 @@ useMiddleware(reactRendererMiddleware({| app = app; appLayout = AppLayout |}))
 useMiddleware(graphqlClientMiddleware({| route = "/graphql" |}))
 useMiddleware(analyticstMiddleware({| analyticsRouter = analyticsRouter; fetch = fetch |}))
 useMiddleware(fetchClientMiddleware())
+useMiddleware(analyticstMiddleware({| analyticsRouter = analyticsRouter; fetch = fetch |}))
 
 
 universalApp app

@@ -7,7 +7,7 @@ open System
 [<Emit("console.log($0)")>]
 let consoleLog text: unit = jsNative
 
-[<Emit("fetch($0)")>]
+[<Emit("fetch($0)")>] // TODO: fix this
 let fetch (url: string): JS.Promise<{| text: unit -> JS.Promise<string>; json: unit -> JS.Promise<obj> |}> = jsNative
 
 [<Emit("$0 === undefined")>]

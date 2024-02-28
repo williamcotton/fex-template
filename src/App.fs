@@ -131,7 +131,7 @@ let universalApp (app: ExpressApp) =
     app.get("/github_status", fun req res next ->
         promise {
             let! json = 
-                req.fetchJson "https://www.githubstatus.com/api/v2/summary.json" {||} {||}
+                req.fetchJson "https://www.githubstatus.com/api/v2/summary.json"  {||} {| cache = true |}
             let status : obj array = json?components
             res.renderComponent(GithubStatusPage {| status = status |})
         } |> ignore

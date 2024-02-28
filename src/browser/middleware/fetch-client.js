@@ -20,7 +20,9 @@ export default () => (req, res, next) => {
 
     // Check cache first
     const cachedResponse =
-      initialRequest || (cache && !initialRequest) ? localQueryCache[key] : false;
+      initialRequest || (cache && !initialRequest)
+        ? Object.assign(req.queryCache, localQueryCache)[key]
+        : false;
 
     const fetchJson = async () => {
       const response = await fetch(url, {
@@ -43,16 +45,26 @@ export default () => (req, res, next) => {
     };
 
     // Use cached response if available and not refreshing
-    const response =
+    const data =
       cachedResponse && !refresh ? cachedResponse : await fetchJson();
 
     // Cache the new response if needed
     if (cache && !initialRequest) {
       localQueryCache[key] = response;
+      req.queryCache[key] = response;
     }
 
+    req.dataQuery = {
+      type: "fetch",
+      data,
+      query: url,
+      variables: options,
+    };
+
+    initialRequest = false;
+
     // No need to separate data and errors as we're not dealing with GraphQL specific responses
-    return response;
+    return data;
   };
   next();
 };

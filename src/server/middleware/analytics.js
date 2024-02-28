@@ -1,8 +1,11 @@
 import format from 'date-fns/format';
 
-export default ({ analyticsRouter, app }) => {
-  const analyticsPageview = () => {}; // ({ url, headers, ip, title }) => {};
-  const analyticsEvent = () => {}; // ({ url, headers, ip, title, payload }) => {};
+export default ({
+  analyticsRouter,
+  app,
+  analyticsPageview,
+  analyticsEvent,
+}) => {
   const commonLogFormat = (req, res) => {
     const {
       ip,
@@ -10,34 +13,34 @@ export default ({ analyticsRouter, app }) => {
       method,
       httpVersion,
       username,
-      headers: { referer, 'user-agent': userAgent },
+      headers: { referer, "user-agent": userAgent },
+      cookies: { sessionUuid },
     } = req;
     const { statusCode } = res;
     const rawRequest = `${method.toUpperCase()} ${url} HTTP/${httpVersion}`;
     const timestamp = format(new Date(), "eee, d MMM yyyy HH:mm:ss zzzz");
     console.log(
-      `${ip} - ${username || '-'} [${timestamp}] "${rawRequest}" ${
-        statusCode || '-'
-      } - "${referer || '-'}" "${userAgent}"`
+      `${ip} ${sessionUuid} ${username || "-"} [${timestamp}] "${rawRequest}" ${
+        statusCode || "-"
+      } - "${referer || "-"}" "${userAgent}"`
     );
     // ip anonymousId username timestamp "rawRequest" statusCode byteSize "referer" "userAgent"
   };
 
-  app.post('/analytics', (req, res) => {
-    console.log('analytics');
+  app.post("/analytics", (req, res) => {
     const { headers, body, ip } = req;
     const { type, url, statusCode, method, ...params } = body;
     req.url = url;
     res.statusCode = statusCode;
     req.method = method;
-    headers.referer = headers['override-referer'];
-    delete headers['override-referer'];
+    headers.referer = headers["override-referer"];
+    delete headers["override-referer"];
     commonLogFormat(req, res);
     switch (type) {
-      case 'pageview':
+      case "pageview":
         analyticsPageview({ headers, ip, ...params });
         break;
-      case 'event':
+      case "event":
         analyticsEvent({ headers, ip, ...params });
         break;
       default:
@@ -47,8 +50,7 @@ export default ({ analyticsRouter, app }) => {
   });
 
   return (req, res, next) => {
-    res.on('finish', () => {
-      console.log('finish');
+    res.on("finish", () => {
       req.url = req.originalUrl;
       const { url, headers, ip } = req;
       commonLogFormat(req, res);

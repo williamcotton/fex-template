@@ -33,7 +33,7 @@ let AppLayout (props: {| content: ReactElement; req: ExpressReq |}) =
                                 Link {| href = "/about"; children = "About" |}
                             ]
                             Html.li [
-                                Link {| href = "/weather"; children = "Weather" |}
+                                Link {| href = "/github_status"; children = "GitHub Status" |}
                             ]
                         ]
                     ]

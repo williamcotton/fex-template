@@ -23,6 +23,7 @@ export default ({ schema, rootValue }) => (req, res, next) => {
         throw new HTTPError(statusCode, errors[0].message);
       }
       req.dataQuery = {
+        type: "graphql",
         data,
         errors,
         query,

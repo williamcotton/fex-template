@@ -55,6 +55,7 @@ export default ({ route }) => (req, res, next) => {
 
     // store the data, errors, query and variables on the request for other interested middleware, eg, event tracking for analytics
     req.dataQuery = {
+      type: 'graphql',
       data,
       errors,
       query,
