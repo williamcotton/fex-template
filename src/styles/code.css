@@ -16,3 +16,17 @@ pre {
   overflow: scroll;
 }
 
+.server {
+  pre {
+    border: 3px solid darkred;
+    background-color: #fff0f0;
+  }
+}
+
+.client {
+  pre {
+    border: 3px solid darkblue;
+    background-color: #f0f8ff;
+  }
+}
+

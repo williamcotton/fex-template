@@ -530,6 +530,7 @@ let RequestResponseCyclePage() =
         let steps = 9 // Steps including server and client middleware
 
         let cycleRequestStep = fun _ -> setRequestStep((requestStep + 1) % steps)
+        let cycleBackRequestStep = fun _ -> setRequestStep(if requestStep = 0 then steps - 1 else requestStep - 1)
 
         // Updated function signatures to include a background color parameter
         let createParallelStep (title: string, stepIndex: int, offsetX: int, offsetY: int, backgroundColor: string) =
@@ -576,7 +577,11 @@ let RequestResponseCyclePage() =
         Html.p [
             Html.button [
                 prop.onClick (fun _ -> cycleRequestStep())
-                prop.text "Cycle Through Request and Response"
+                prop.text "Cycle Forward"
+            ]
+            Html.button [
+                prop.onClick (fun _ -> cycleBackRequestStep())
+                prop.text "Cycle Backward"
             ]
         ]
 
@@ -609,5 +614,298 @@ let RequestResponseCyclePage() =
                 createParallelStep("DOM Update", 8, 400, 240, "darkblue")
             ]
         ]
-    ]
+        Html.p [
+            prop.className "server"
+            prop.children [
+                Html.p [
+            match requestStep with
+            | 0 | 1 -> (CodeBlock {| lang = "plaintext"; code =
+"""GET / HTTP/1.1
+Host: example.com
+"""                 |})
+            | 2 -> (CodeBlock {| lang = "fsharp"; code =
+"""// from server/Server.fs
 
+let app = express()
+useMiddleware(expressStatic("build"))
+useMiddleware(cookieSession({| name = "session"; sameSite = "lax"; secret = sessionSecret |}))
+useMiddleware(bodyParser.urlencoded({| extended = false |}))
+useMiddleware(bodyParser.json())
+useMiddleware(cookieParser())
+useMiddleware(csurf())
+useMiddlewareRoute "/graphql" (createHandler({| schema = schema.schema; rootValue = rootValue; graphiql = true; context = customContextFunction |}))
+useMiddleware(graphqlClientMiddleware({| schema = schema.schema; rootValue = rootValue |}));
+useMiddleware(fetchClientMiddleware())
+useMiddleware(analyticstMiddleware({| analyticsRouter = analyticsRouter; app = app; analyticsPageview = analyticsPageviev; analyticsEvent = analyticsEvent |}))
+useMiddleware(expressLinkMiddleware({| defaultTitle = defaultTitle |}))
+useMiddleware(reactRendererMiddleware({| appLayout = AppLayout |}))
+
+universalApp app
+
+app.listen(int port, fun _ ->
+    printfn "Listening on port %s" port
+)
+"""                 |})
+            | 3 -> (CodeBlock {| lang = "javascript"; code =
+""" // server/middleware/express-link.js
+
+export default ({ defaultTitle }) =>
+  (req, res, next) => {
+    req.csrf = req.csrfToken();
+
+    res.expressLink = {
+      queryCache: {},
+      csrf: req.csrf,
+      user: req.user,
+      defaultTitle,
+    };
+
+    req.renderDocument = ({ renderedContent, title, description }) =>
+      renderDocument({
+        defaultTitle,
+        expressLink: res.expressLink,
+        renderedContent,
+        title,
+        description,
+      });
+
+    res.navigate = (path, query) => {
+      const pathname = query ? `${path}?${qs.stringify(query)}` : path;
+      res.redirect(pathname);
+    };
+
+    res.redirect = res.redirect.bind(res);
+
+    res.cacheQuery = (key, data) => {
+      res.expressLink.queryCache[key] = data;
+    };
+
+    next();
+  };
+
+};
+"""             |})
+
+            | 4 -> (CodeBlock {| lang = "fsharp"; code =
+""" // from App.fs
+
+app.get("/", fun req res next ->
+    promise {
+        let! response = 
+            req 
+            |> gql "query { greeting { heading content } }" {||} {||}
+            
+        match response with
+        | Ok response -> 
+            let greeting : Greeting = response?greeting
+            FrontPage ({| greeting = greeting |})
+            |> res.renderComponent
+        | Error message -> next()
+    } |> ignore
+)"""             |})
+            | 5 -> (CodeBlock {| lang = "fsharp"; code =
+"""// from server/GraphQLSchema.fs
+
+let schemaString = "
+type Greeting {
+    heading: String
+    content: String
+}
+
+type Query {
+    greeting: Greeting
+}
+"
+
+let rootValueInitializer 
+    let greeting () =
+        promise {
+            let greeting = {
+                heading = "Welcome to Fex"
+                content = "Fex is an architectural pattern for building web applications with Express in JavaScript, utilizing Fable, Fable.React, and Feliz. It's not a framework but an approach that emphasizes simplicity and flexibility. By leveraging both the `express` npm module for server-side and the `browser-express` module for client-side operations, it allows developers to craft route handlers, middleware, and React components that seamlessly work across both environments. The goal is to simplify web development while giving developers the freedom to adapt their architecture as their application evolves to meet user needs."
+            }
+            return greeting
+        }
+    {| greeting = greeting |}    
+"""             |})
+            | 6 -> (CodeBlock {| lang = "fsharp"; code =
+"""// from Components.fs
+
+[<ReactComponent>]
+let FrontPage(props: {| greeting : Greeting |}) =
+    let req = React.useContext requestContext
+    React.fragment [
+        Html.h2 props.greeting.heading
+        Html.p props.greeting.content
+    ]
+    req.Link {| href = "/form-elements"; children = "Next: Form Elements" |}
+)
+"""             |})
+            | 7 | 8 -> (CodeBlock {| lang = "javascript"; code =
+"""// from server/middleware/react-renderer.js
+
+res.renderComponent = (content, options = {}) => {
+    const layout = options.layout || appLayout || DefaultLayout;
+    const renderedContent = renderToString(
+    React.createElement(layout, { content, req })
+    );
+    const { title, description } = options;
+    const statusCode = options.statusCode || 200;
+    res.writeHead(statusCode, { "Content-Type": "text/html" });
+    res.end(
+    req.renderDocument({
+        renderedContent,
+        title,
+        description,
+    })
+    );
+};
+"""             |})
+            | _ -> null
+        ]
+            ]
+        ]
+        Html.p [
+            prop.className "client"
+            prop.children [
+                Html.p [
+            match requestStep with
+            | 0 | 1 -> (CodeBlock {| lang = "javascript"; code =
+"""// from browser/middleware/react-renderer.js
+
+const onClick = (e) => {
+    e.preventDefault();
+    function hrefOrParent(target) {
+    if (target.href) {
+        return target.href;
+    }
+    if (target.parentElement) {
+        return hrefOrParent(target.parentElement);
+    }
+    return false;
+    }
+    const href = hrefOrParent(e.currentTarget);
+    app.navigate(href);
+};
+
+const Link = (props) => {
+    const mergedProps = { onClick, ...props };
+    return React.createElement("a", mergedProps);
+};
+
+req.Link = Link;
+"""                 |})
+            | 2 -> (CodeBlock {| lang = "fsharp"; code =
+"""// from browser/Browser.fs
+
+let app = express()
+useMiddleware(expressLinkMiddleware())
+useMiddleware(reactRendererMiddleware({| app = app; appLayout = AppLayout |}))
+useMiddleware(graphqlClientMiddleware({| route = "/graphql" |}))
+useMiddleware(fetchClientMiddleware())
+useMiddleware(analyticstMiddleware({| analyticsRouter = analyticsRouter; fetch = fetch |}))
+
+universalApp app
+
+app.listen(3000, fun _ ->
+    printfn "Listening on port 3000"
+)
+"""                 |})
+            | 3 -> (CodeBlock {| lang = "javascript"; code =
+""" // from browser/middleware/express-link.js
+
+export default () => (req, res, next) => {
+  Object.keys(expressLink).forEach((key) => (req[key] = expressLink[key])); // eslint-disable-line no-return-assign
+
+  req.renderDocument = ({ title }) => {
+    document.querySelector("title").innerText = title || defaultTitle; // eslint-disable-line no-param-reassign
+    return { appContainer: document.querySelector("#app") };
+  };
+
+  res.navigate = (path, query) => {
+    const pathname = query ? `${path}?${qs.stringify(query)}` : path;
+    res.redirect(pathname);
+  };
+
+  res.redirect = res.redirect.bind(res);
+
+  next();
+};
+  """             |})
+            | 4 -> (CodeBlock {| lang = "fsharp"; code =
+""" // from App.fs
+
+app.get("/", fun req res next ->
+    promise {
+        let! response = 
+            req 
+            |> gql "query { greeting { heading content } }" {||} {||}
+            
+        match response with
+        | Ok response -> 
+            let greeting : Greeting = response?greeting
+            FrontPage ({| greeting = greeting |})
+            |> res.renderComponent
+        | Error message -> next()
+    } |> ignore
+)"""             |})
+            | 5 -> (CodeBlock {| lang = "fsharp"; code =
+"""// from server/GraphQLSchema.fs
+
+let schemaString = "
+type Greeting {
+    heading: String
+    content: String
+}
+
+type Query {
+    greeting: Greeting
+}
+"
+
+let rootValueInitializer 
+    let greeting () =
+        promise {
+            let greeting = {
+                heading = "Welcome to Fex"
+                content = "Fex is an architectural pattern for building web applications with Express in JavaScript, utilizing Fable, Fable.React, and Feliz. It's not a framework but an approach that emphasizes simplicity and flexibility. By leveraging both the `express` npm module for server-side and the `browser-express` module for client-side operations, it allows developers to craft route handlers, middleware, and React components that seamlessly work across both environments. The goal is to simplify web development while giving developers the freedom to adapt their architecture as their application evolves to meet user needs."
+            }
+            return greeting
+        }
+    {| greeting = greeting |}    
+"""             |})
+            | 6 -> (CodeBlock {| lang = "fsharp"; code =
+"""// from Components.fs
+
+[<ReactComponent>]
+let FrontPage(props: {| greeting : Greeting |}) =
+    let req = React.useContext requestContext
+    React.fragment [
+        Html.h2 props.greeting.heading
+        Html.p props.greeting.content
+    ]
+    req.Link {| href = "/form-elements"; children = "Next: Form Elements" |}
+)
+"""             |})
+            | 7 | 8 -> (CodeBlock {| lang = "javascript"; code =
+"""// from browser/middleware/react-renderer.js
+
+res.renderComponent = (content, options = {}) => {
+    const { title, description } = options;
+    const statusCode = options.statusCode || 200;
+    const layout = options.layout || appLayout;
+    const { appContainer } = req.renderDocument({ title, description });
+    const root = app.root || createRoot(appContainer);
+    app.root = root;
+    root.render(React.createElement(layout, { content, req }));
+    res.status(statusCode);
+    res.send();
+};
+"""             |})
+            | _ -> null
+        ]
+            ]
+        ]
+        
+
+    ]
