@@ -1,22 +1,28 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
     <RootNamespace>fex_template</RootNamespace>
   </PropertyGroup>
-
   <ItemGroup>
     <Compile Include="src/common/Global.fs" />
     <Compile Include="src/Express.fs" />
     <Compile Include="src/server/GraphQLSchema.fs" />
-    <Compile Include="src/components/Components.fs" />
+    <Compile Include="src/components/CodeBlock.fs" />
+    <Compile Include="src/components/AppLayout.fs" />
+    <Compile Include="src/components/pages/FrontPage.fs" />
+    <Compile Include="src/components/pages/FormElementPage.fs" />
+    <Compile Include="src/components/pages/MiddlewarePage.fs" />
+    <Compile Include="src/components/pages/FormValidationPage.fs" />
+    <Compile Include="src/components/pages/RequestContextPage.fs" />
+    <Compile Include="src/components/pages/WeatherPage.fs" />
+    <Compile Include="src/components/pages/GithubStatusPage.fs" />
+    <Compile Include="src/components/pages/RequestResponseCyclePage.fs" />
     <Compile Include="src/App.fs" />
     <Compile Include="src/server/AnalyticsRouter.fs" />
     <Compile Include="src/server/Server.fs" />
     <Compile Include="src/browser/Browser.fs" />
   </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="Fable.Core" Version="4.3.0" />
     <PackageReference Include="Fable.Fetch" Version="2.6.0" />
@@ -26,5 +32,4 @@
     <PackageReference Include="Feliz" Version="2.7.0" />
     <PackageReference Include="Validus" Version="4.1.3" />
   </ItemGroup>
-
 </Project>

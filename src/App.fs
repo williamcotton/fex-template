@@ -1,13 +1,21 @@
 ﻿module App
 
 open Feliz
-open Fable.Core
 open Fable.Core.JsInterop
 open Express
 open Global
 open GraphQLSchema
-open Components
 open Validus
+
+// Pages
+open FrontPage
+open FormElementPage
+open MiddlewarePage
+open FormValidationPage
+open RequestContextPage
+open RequestResponseCyclePage
+open WeatherPage
+open GithubStatusPage
 
 let universalApp (app: ExpressApp) =
     app.get("/", fun req res next ->
@@ -106,17 +114,6 @@ let universalApp (app: ExpressApp) =
         ]
         |> res.renderComponent
     )
-
-    // app.get("/weather", fun req res next ->
-    //     promise {
-    //         let! response = 
-    //             fetch "https://api.weather.gov/gridpoints/TOP/32,81/forecast"
-    //         let! json = response.json()
-    //         consoleLog json
-    //         let forecast : obj array = json?properties?periods
-    //         res.renderComponent(WeatherPage {| forecast = forecast |})
-    //     } |> ignore
-    // )
     
     app.get("/weather", fun req res next ->
         promise {

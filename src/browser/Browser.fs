@@ -4,7 +4,7 @@ open Feliz
 open Fable.Core
 open App
 open Express
-open Components
+open AppLayout
 open AnalyticsRouter
 open Global
 
