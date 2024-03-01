@@ -18,7 +18,7 @@ export default ({
     } = req;
     const { statusCode } = res;
     const rawRequest = `${method.toUpperCase()} ${url} HTTP/${httpVersion}`;
-    const timestamp = format(new Date(), "eee, d MMM yyyy HH:mm:ss zzzz");
+    const timestamp = format(new Date(), "dd/MMM/yyyy:HH:mm:ss xx");
     console.log(
       `${ip} ${sessionUuid} ${username || "-"} [${timestamp}] "${rawRequest}" ${
         statusCode || "-"

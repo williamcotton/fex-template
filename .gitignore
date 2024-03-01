@@ -48,6 +48,7 @@ test/screenshots/
 
 obj/
 bin/
+.metals/
 
 # Fable compiled files
 *.fs.js

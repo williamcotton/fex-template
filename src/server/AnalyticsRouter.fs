@@ -21,7 +21,7 @@ analyticsRouter.post("/setName", fun req res next ->
 
 analyticsRouter.get("/github_status", fun req res next ->
     let url = req?dataQuery?query
-    res.pageview({| title = "Form Elements Page"; payload = {| url = url |} |})
+    res.pageview({| title = "Github Status"; payload = {| url = url |} |})
 )
 
 let analyticsPageviev obj = 

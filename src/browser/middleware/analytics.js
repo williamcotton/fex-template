@@ -2,14 +2,12 @@ let initialRequest = true;
 
 export default ({ analyticsRouter }) => {
   const analyticsPublish = async (type, req, res, params) => {
-    console.log('analyticsPublish', type);
     const {
       url,
       method,
       headers: { referer },
     } = req;
     const { statusCode } = res;
-    console.log('analyticsPublish', type, url, statusCode, method, params);
     const response = await fetch('/analytics', {
       method: 'POST',
       headers: {

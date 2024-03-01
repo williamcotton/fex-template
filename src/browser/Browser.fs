@@ -6,7 +6,6 @@ open App
 open Express
 open AppLayout
 open AnalyticsRouter
-open Global
 
 [<Import("default", "browser-express")>]
 let express : unit -> ExpressApp = jsNative
@@ -24,7 +23,7 @@ let graphqlClientMiddleware : {| route : string |} -> unit = jsNative
 let fetchClientMiddleware: obj -> unit = jsNative
 
 [<Import("default", "./middleware/analytics.js")>]
-let analyticstMiddleware: {| analyticsRouter : obj; fetch : obj |} -> unit = jsNative
+let analyticstMiddleware: {| analyticsRouter : obj |} -> unit = jsNative
 
 
 [<Emit("app.use($0)")>]
@@ -34,9 +33,8 @@ let app = express()
 useMiddleware(expressLinkMiddleware())
 useMiddleware(reactRendererMiddleware({| app = app; appLayout = AppLayout |}))
 useMiddleware(graphqlClientMiddleware({| route = "/graphql" |}))
-useMiddleware(analyticstMiddleware({| analyticsRouter = analyticsRouter; fetch = fetch |}))
+useMiddleware(analyticstMiddleware({| analyticsRouter = analyticsRouter |}))
 useMiddleware(fetchClientMiddleware())
-useMiddleware(analyticstMiddleware({| analyticsRouter = analyticsRouter; fetch = fetch |}))
 
 
 universalApp app
