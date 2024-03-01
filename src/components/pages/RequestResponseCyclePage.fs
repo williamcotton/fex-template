@@ -131,9 +131,11 @@ res.renderComponent = (content, options = {}) => {
 [<ReactComponent>]
 let serverResponse = 
     CodeBlock {| lang = "html"; code =
-"""// HTTP/1.1 200 OK
-// Content-Type: text/html
-// Content-Length: 1234
+"""HTTP/1.1 200 OK
+Date: Fri, 29 Feb 2024 12:34:56 GMT
+Content-Type: text/html; charset=UTF-8
+Content-Length: 123
+Connection: close
 
 <!DOCTYPE html>
 <html lang="en">
