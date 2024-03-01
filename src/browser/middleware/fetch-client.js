@@ -50,8 +50,8 @@ export default () => (req, res, next) => {
 
     // Cache the new response if needed
     if (cache && !initialRequest) {
-      localQueryCache[key] = response;
-      req.queryCache[key] = response;
+      localQueryCache[key] = data;
+      req.queryCache[key] = data;
     }
 
     req.dataQuery = {
