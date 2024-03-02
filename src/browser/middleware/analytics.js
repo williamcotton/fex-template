@@ -32,7 +32,6 @@ export default ({ analyticsRouter }) => {
         };
         res.event = (params) => analyticsPublish('event', req, res, params);
         analyticsRouter(req, res, () => {
-          console.log('analyticsPublish', 'log');
           analyticsPublish('log', req, res, {});
         });
       }

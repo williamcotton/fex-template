@@ -17,6 +17,8 @@ export default ({ appLayout }) =>
       const mergedProps = { ...props };
       const { children } = mergedProps;
       delete mergedProps.children;
+      delete mergedProps.baseAction;
+      delete mergedProps.buttonText;
       const formElements = [].concat(children);
       formElements.push(
         React.createElement("input", {
@@ -30,6 +32,38 @@ export default ({ appLayout }) =>
     };
 
     req.Form = Form;
+
+    const FormButton = (props) => {
+      const { name, value, buttonText } = props;
+
+      // Define the children (form elements) to be passed to the Form component
+      const children = [
+        React.createElement("input", {
+          type: "hidden",
+          name: name,
+          value: value,
+          key: "hiddenInput",
+        }),
+        React.createElement("input", {
+          type: "submit",
+          value: buttonText,
+          key: "submitButton",
+        }),
+      ];
+
+      const mergedProps = {
+        action: props.baseAction ? req.baseUrl + props.baseAction : props.action,
+        method: "post",
+        children: children,
+        style: { display: "inline" },
+        ...props,
+      };
+
+      // Create and return a Form component instance with the necessary props
+      return React.createElement(Form, mergedProps);
+    }
+
+    req.FormButton = FormButton;
 
     res.renderComponent = (content, options = {}) => {
       const layout = options.layout || appLayout || DefaultLayout;

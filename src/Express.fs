@@ -9,10 +9,12 @@ type ExpressReq =
   abstract member query : obj
   abstract member Link : obj -> ReactElement
   abstract member Form : obj -> ReactElement
+  abstract member FormButton : obj -> ReactElement
   abstract member method : string
   abstract member path : string
   abstract member originalUrl : string
   abstract member url : string
+  abstract member headers : obj
   abstract member baseUrl : string
   abstract member hostname : string
   abstract member ip : string
@@ -39,6 +41,7 @@ type ExpressApp =
   abstract member listen: int * (unit -> unit) -> unit
   abstract member ``use``: (obj -> ExpressReq -> ExpressRes -> (unit -> unit) -> unit) -> unit
   abstract member ``use``: (ExpressReq -> ExpressRes -> (unit -> unit) -> unit) -> unit
+  abstract member ``use``: string * ExpressApp -> unit
 
 let gql (query: string) (variables: obj) (options: obj) (req: ExpressReq)  : JS.Promise<Result<obj, string>> =
   promise {

@@ -23,7 +23,7 @@
     "@contentful/rich-text-types": "^16.3.4",
     "@graphql-tools/schema": "^10.0.2",
     "body-parser": "^1.20.2",
-    "browser-express": "^4.7.0",
+    "browser-express": "^4.8.0",
     "contentful": "^10.6.21",
     "cookie-parser": "^1.4.6",
     "cookie-session": "^2.0.0",

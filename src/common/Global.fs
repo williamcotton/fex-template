@@ -16,6 +16,8 @@ let isUndefined (x: 'a) : bool = jsNative
 [<Emit("undefined")>]
 let undefined : obj = jsNative
 
+[<Emit("app.use($0, $1)")>]
+let useMiddlewareRoute route middleware: unit = jsNative
 
 let addOrdinal day =
     match day % 10 with

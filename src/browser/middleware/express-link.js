@@ -14,12 +14,16 @@ export default () => (req, res, next) => {
     return { appContainer: document.querySelector("#app") };
   };
 
-  res.navigate = (path, query) => {
+  res.navigate = (path, query, replace) => {
     const pathname = query ? `${path}?${qs.stringify(query)}` : path;
-    res.redirect(pathname);
+    res.redirect(pathname, replace);
   };
 
   res.redirect = res.redirect.bind(res);
+
+  res.redirectBack = (query) => {
+    res.navigate(req.baseUrl, query, true);
+  };
 
   next();
 };

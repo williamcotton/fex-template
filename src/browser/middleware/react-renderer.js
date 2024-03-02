@@ -31,12 +31,17 @@ export default ({ app, appLayout }) =>
       const onSubmit = (e) => {
         e.preventDefault();
         const body = serialize(e.target, { hash: true, empty: true });
-        app.submit(e.target.action, e.target.method, body);
+        const method = e.target.method;
+        const action = props.baseAction
+          ? req.baseUrl + props.baseAction
+          : e.target.action;
+        app.submit(action, method, body);
       };
       const mergedProps = { onSubmit, ...props };
       const { children } = mergedProps;
       delete mergedProps.children;
-      mergedProps.key = mergedProps.action;
+      delete mergedProps.baseAction;
+      delete mergedProps.buttonText;
       const formElements = [].concat(children);
       formElements.push(
         React.createElement("input", {
@@ -50,6 +55,37 @@ export default ({ app, appLayout }) =>
     };
 
     req.Form = Form;
+
+    const FormButton = (props) => {
+      const { name, value, buttonText } = props;
+
+      // Define the children (form elements) to be passed to the Form component
+      const children = [
+        React.createElement("input", {
+          type: "hidden",
+          name: name,
+          value: value,
+          key: "hiddenInput",
+        }),
+        React.createElement("input", {
+          type: "submit",
+          value: buttonText,
+          key: "submitButton",
+        }),
+      ];
+
+      const mergedProps = {
+        method: "post",
+        children: children, 
+        style: { display: "inline" },
+        ...props
+      };
+
+      // Create and return a Form component instance with the necessary props
+      return React.createElement(Form, mergedProps);
+    };
+
+    req.FormButton = FormButton;
 
     res.renderComponent = (content, options = {}) => {
       const { title, description } = options;

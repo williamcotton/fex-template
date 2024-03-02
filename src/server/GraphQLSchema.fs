@@ -1,6 +1,7 @@
 module GraphQLSchema
 
 open Fable.Core.JsInterop
+open Global
 
 type Greeting = {
     heading: string
@@ -9,6 +10,10 @@ type Greeting = {
 
 type Name = {
     name: string
+}
+
+type Color = {
+    color: string
 }
 
 let schemaString = "
@@ -23,6 +28,10 @@ let schemaString = "
     name: String
   }
 
+  type Color {
+    color: String
+  }
+
   type SuccessResponse {
     success: Boolean
   }
@@ -30,10 +39,12 @@ let schemaString = "
   type Query {
     greeting: Greeting
     name: Name
+    color: Color
   }
   
   type Mutation {
     setName(inputName: String): SuccessResponse
+    setColor(color: String): SuccessResponse
   }
   "
 
@@ -62,4 +73,21 @@ let rootValueInitializer : obj =
                 | _ -> { name = inputName }    
         }
 
-    {| greeting = greeting; setName = setName; name = name |}
+    let setColor (input: string) (req: obj) =
+        promise {
+            req?session?color <- input?color
+            consoleLog ("write", input?color)
+            return {| success = true |}
+        }
+
+    let color _ (req: obj) =
+        promise {
+            let color = req?session?color
+            consoleLog ("read", color)
+            return 
+                match color with
+                | null -> { color = "" }
+                | _ -> { color = color }    
+        }
+
+    {| greeting = greeting; setName = setName; name = name; setColor = setColor; color = color |}

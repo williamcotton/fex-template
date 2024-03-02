@@ -2,8 +2,8 @@
 
 open Feliz
 open Fable.Core.JsInterop
-open Express
 open Global
+open Express
 open GraphQLSchema
 open Validus
 
@@ -16,6 +16,8 @@ open CaveatsPage
 open RequestResponseCyclePage
 open WeatherPage
 open GithubStatusPage
+open SinglePageApplicationDemoPage
+
 
 let universalApp (app: ExpressApp) =
     app.get("/", fun req res next ->
@@ -125,6 +127,14 @@ let universalApp (app: ExpressApp) =
         } |> ignore
     )
 
+    app.get("/request-response-cycle", fun req res next ->
+        RequestResponseCyclePage () |> res.renderComponent
+    )
+    
+    app.get("/caveats", fun req res next ->
+        CaveatsPage () |> res.renderComponent
+    )
+
     app.get("/github_status", fun req res next ->
         promise {
             let! json = 
@@ -133,14 +143,8 @@ let universalApp (app: ExpressApp) =
             res.renderComponent(GithubStatusPage {| status = status |})
         } |> ignore
     )
-    
-    app.get("/caveats", fun req res next ->
-        CaveatsPage () |> res.renderComponent
-    )
 
-    app.get("/request-response-cycle", fun req res next ->
-        RequestResponseCyclePage () |> res.renderComponent
-    )
+    app.``use`` ("/single-page-application-demo", SinglePageApplicationDemoRouter)
     
     app.``use`` (fun (req: ExpressReq) (res: ExpressRes) next ->
         res.status 404 |> ignore

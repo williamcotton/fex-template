@@ -61,6 +61,10 @@ export default ({ defaultTitle }) =>
 
     res.redirect = res.redirect.bind(res);
 
+    res.redirectBack = (query) => {
+      res.navigate(req.baseUrl, query);
+    };
+
     res.cacheQuery = (key, data) => {
       res.expressLink.queryCache[key] = data;
     };

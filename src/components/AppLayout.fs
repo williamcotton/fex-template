@@ -21,9 +21,6 @@ let AppLayout (props: {| content: ReactElement; req: ExpressReq |}) =
                             Html.li [
                                 Link {| href = "/about"; children = "About" |}
                             ]
-                            Html.li [
-                                Link {| href = "/github_status"; children = "GitHub Status" |}
-                            ]
                         ]
                     ]
                 ]
