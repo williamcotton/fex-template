@@ -388,6 +388,39 @@ let createCombinedStepWithRequestStep requestStep ( title: string, stepIndex: in
     ]
 
 [<ReactComponent>]
+let requestResponseCycleSvg requestStep =
+    Svg.svg [
+        svg.width (694) // Width to accommodate the elements
+        svg.height (300) // Adjusted height to fit the additional rows
+        svg.children [ 
+            let createParallelStep = createParallelStepWithRequestStep requestStep
+            let createCombinedStep = createCombinedStepWithRequestStep requestStep
+
+            // Dynamically create SVG blocks for each step with specific background colors
+            createParallelStep("HTTP Request", 0, 0, 0, "darkred")
+            createParallelStep ("Click", 0, 534, 0, "darkblue")
+
+            createParallelStep ("Event Listener", 1, 534, 30, "darkblue")
+            createParallelStep( "Socket Listener", 1, 0, 30, "darkred")
+
+            createParallelStep("Express", 2, 0, 60, "darkred")
+            createParallelStep ( "Browser-Express", 2, 534, 60, "darkblue")
+
+            createParallelStep("Server Middleware", 3, 0, 90, "darkred")
+            createParallelStep("Client Middleware", 3, 534, 90, "darkblue")
+
+            createCombinedStep("Universal Request Handlers", 4, 100, 120, "purple")
+            createCombinedStep("Universal React Components", 5, 100, 150, "purple")
+
+            createParallelStep("Rendered HTML", 6, 0, 180, "darkred")
+            createParallelStep("Diffed DOM", 6, 534, 180, "darkblue")    
+
+            createParallelStep("HTTP Response", 7, 0, 210, "darkred")
+            createParallelStep("DOM Update", 7, 534, 210, "darkblue")
+        ]
+    ]
+
+[<ReactComponent>]
 let RequestResponseCyclePage() =
     let req = React.useContext requestContext
     React.fragment [
@@ -396,6 +429,8 @@ let RequestResponseCyclePage() =
 
         let cycleRequestStep = fun _ -> setRequestStep((requestStep + 1) % steps)
         let cycleBackRequestStep = fun _ -> setRequestStep(if requestStep = 0 then steps - 1 else requestStep - 1)
+
+        Html.h2 "Request-Response Cycle"
 
         Html.p [
             Html.button [
@@ -408,37 +443,7 @@ let RequestResponseCyclePage() =
             ]
         ]
 
-        // SVG container for the visual representation
-        Svg.svg [
-            svg.width (694) // Width to accommodate the elements
-            svg.height (300) // Adjusted height to fit the additional rows
-            svg.children [ 
-                let createParallelStep = createParallelStepWithRequestStep requestStep
-                let createCombinedStep = createCombinedStepWithRequestStep requestStep
-
-                // Dynamically create SVG blocks for each step with specific background colors
-                createParallelStep("HTTP Request", 0, 0, 0, "darkred")
-                createParallelStep ("Click", 0, 534, 0, "darkblue")
-
-                createParallelStep ("Event Listener", 1, 534, 30, "darkblue")
-                createParallelStep( "Socket Listener", 1, 0, 30, "darkred")
-
-                createParallelStep("Express", 2, 0, 60, "darkred")
-                createParallelStep ( "Browser-Express", 2, 534, 60, "darkblue")
-
-                createParallelStep("Server Middleware", 3, 0, 90, "darkred")
-                createParallelStep("Client Middleware", 3, 534, 90, "darkblue")
-
-                createCombinedStep("Universal Request Handlers", 4, 100, 120, "purple")
-                createCombinedStep("Universal React Components", 5, 100, 150, "purple")
-
-                createParallelStep("Rendered HTML", 6, 0, 180, "darkred")
-                createParallelStep("Diffed DOM", 6, 534, 180, "darkblue")    
-
-                createParallelStep("HTTP Response", 7, 0, 210, "darkred")
-                createParallelStep("DOM Update", 7, 534, 210, "darkblue")
-            ]
-        ]
+        requestResponseCycleSvg requestStep
 
         Html.p [
             prop.className "explanation"
@@ -503,5 +508,6 @@ let RequestResponseCyclePage() =
             ]
         ]
         
+        req.Link {| href = "/caveats"; children = "Next: Caveats" |}
 
     ]

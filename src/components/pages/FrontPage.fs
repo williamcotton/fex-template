@@ -65,17 +65,14 @@ let FrontPage(props: {| greeting : Greeting |}) =
             let greeting : Greeting = response?greeting
             ShowGreeting ({| greeting = greeting |})
             |> res.renderComponent
-        | Error message -> next()
-
-    } |> ignore
 )
 """     |}
 
         Html.p "What underlies this functionality is that `res.renderComponent` and `req.gql` are attached to the request and response objects by parallel middleware. These middleware have separate implementations for the server and the browser but offer the same typed interface."
 
-        Html.h3 "Feliz React Components"
+        Html.h3 "Universal React Components"
 
-        Html.p "React components can be crafted in F# using Feliz, allowing for server-rendered HTML and client-side interactivity. Here's an example of a counter component, which should look very familiar to a React developer:"
+        Html.p "React components can be crafted in F# using Feliz, allowing for server-rendered HTML and client-side interactivity. Here's an example of both a server rendered and an interactive counter component, which should look very familiar to a React developer:"
 
         Counter()
 
@@ -101,23 +98,5 @@ let Counter() =
     ]
 """     |}
 
-        Html.h3 "Link Elements"
-
-        Html.p "Navigation is managed by React components, facilitating client-side routing that operates as a single-page application with dynamic data fetching. At the same time the Fex architectural pattern ensures the server-side rendering of the components."
-
-        Html.p "Example navigation bar component:"
-
-        CodeBlock {| 
-            lang = "javascript"; code =
-"""[<ReactComponent>]
-let NavigationBar(props: {| greeting : Greeting |}) =
-    let req = React.useContext requestContext
-    Html.nav [
-        req.Link {| href = "/"; children = "Home" |}
-        req.Link {| href = "/about"; children = "About" |}
-    ]
-"""
-        |}
-
-        req.Link {| href = "/form-elements"; children = "Next: Form Elements" |}
+        req.Link {| href = "/link-and-form-elements"; children = "Next: Links and Form Elements" |}
     ]

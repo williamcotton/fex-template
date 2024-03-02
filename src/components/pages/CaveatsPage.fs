@@ -1,4 +1,4 @@
-module RequestContextPage
+module CaveatsPage
 
 open Feliz
 open Fable.Core.JsInterop
@@ -7,10 +7,10 @@ open AppLayout
 open CodeBlock
 
 [<ReactComponent>]
-let RequestContextPage() =
+let CaveatsPage() =
     let req = React.useContext requestContext
     React.fragment [
-        Html.h2 "Request Context"
+        Html.h3 "Caveats"
         Html.p "At the core of this architecture is the HTTP request. In the context of the server this request is intiated by a socket listening on a TCP port, converted into data of type ExpressReq, and passed to route handlers. In the context of the browser this request is initiated by onClick and onSubmit DOM events, turned into to type ExpressReq, and passed on to the same route handlers."
         Html.p "The only difference is in how the request is formed and how the response is handled. The rest forms the core of the user's interactions with a web browser."
         Html.p "In a Fex application the core of the applications is written in F#. Like any language that compiles to a host language it is a bit rought around the edges. But in general it is easy to isolate the parts of the application that need to be written in JavaScript and the parts that need to be written in F#."

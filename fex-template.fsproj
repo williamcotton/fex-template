@@ -11,10 +11,10 @@
     <Compile Include="src/components/CodeBlock.fs" />
     <Compile Include="src/components/AppLayout.fs" />
     <Compile Include="src/components/pages/FrontPage.fs" />
-    <Compile Include="src/components/pages/FormElementPage.fs" />
+    <Compile Include="src/components/pages/LinksAndFormElementPage.fs" />
     <Compile Include="src/components/pages/MiddlewarePage.fs" />
     <Compile Include="src/components/pages/FormValidationPage.fs" />
-    <Compile Include="src/components/pages/RequestContextPage.fs" />
+    <Compile Include="src/components/pages/CaveatsPage.fs" />
     <Compile Include="src/components/pages/WeatherPage.fs" />
     <Compile Include="src/components/pages/GithubStatusPage.fs" />
     <Compile Include="src/components/pages/RequestResponseCyclePage.fs" />

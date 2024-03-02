@@ -9,10 +9,10 @@ open Validus
 
 // Pages
 open FrontPage
-open FormElementPage
+open LinksAndFormElementPage
 open MiddlewarePage
 open FormValidationPage
-open RequestContextPage
+open CaveatsPage
 open RequestResponseCyclePage
 open WeatherPage
 open GithubStatusPage
@@ -33,7 +33,7 @@ let universalApp (app: ExpressApp) =
         } |> ignore
     )
 
-    app.get("/form-elements", fun req res next ->
+    app.get("/link-and-form-elements", fun req res next ->
         promise {
             let! response = 
                 req 
@@ -42,7 +42,7 @@ let universalApp (app: ExpressApp) =
             match response with
             | Ok response -> 
                 let name : Name = response?name
-                FormElementPage ({| inputName = Some name.name |})
+                LinksAndFormElementPage ({| inputName = Some name.name |})
                 |> res.renderComponent
             | Error message -> next()
         } |> ignore
@@ -134,8 +134,8 @@ let universalApp (app: ExpressApp) =
         } |> ignore
     )
     
-    app.get("/request-context", fun req res next ->
-        RequestContextPage () |> res.renderComponent
+    app.get("/caveats", fun req res next ->
+        CaveatsPage () |> res.renderComponent
     )
 
     app.get("/request-response-cycle", fun req res next ->

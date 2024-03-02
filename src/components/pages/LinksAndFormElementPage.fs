@@ -1,14 +1,32 @@
-module FormElementPage
+module LinksAndFormElementPage
 
 open Feliz
 open AppLayout
 open CodeBlock
 
 [<ReactComponent>]
-let FormElementPage(props: {| inputName : string option |}) =
+let LinksAndFormElementPage(props: {| inputName : string option |}) =
     let req = React.useContext requestContext
     React.fragment [
-        Html.h2 "Form Elements"
+        Html.h3 "Link Elements"
+
+        Html.p "Navigation is managed by React components, facilitating client-side routing that operates as a single-page application with dynamic data fetching. At the same time the Fex architectural pattern ensures the server-side rendering of the components."
+
+        Html.p "Example navigation bar component:"
+
+        CodeBlock {| 
+            lang = "javascript"; code =
+"""[<ReactComponent>]
+let NavigationBar(props: {| greeting : Greeting |}) =
+    let req = React.useContext requestContext
+    Html.nav [
+        req.Link {| href = "/"; children = "Home" |}
+        req.Link {| href = "/about"; children = "About" |}
+    ]
+"""
+        |}
+
+        Html.h3 "Form Elements"
 
         Html.p "Forms integrate seamlessly, functioning on both client and server sides, enabling interactions without page reloads. The server also handles these form submissions, ensuring functionality even without JavaScript."
 
@@ -16,7 +34,7 @@ let FormElementPage(props: {| inputName : string option |}) =
 
         CodeBlock {| lang = "fsharp"; code = 
 """[<ReactComponent>]
-let FormElementPage(props: {| inputName : string option |}) =
+let LinksAndFormElementPage(props: {| inputName : string option |}) =
     let req = React.useContext requestContext
     React.fragment [
         match props.inputName with

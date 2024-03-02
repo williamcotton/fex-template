@@ -82,4 +82,6 @@ let FormValidationPage(props: {| errors : Map<string, string list>; requestBody 
         Html.p "Again, since we're using the Fex architectural pattern we can turn off JavaScript in our web browsers and have the exact same experience."
 
         Html.p "Take a look in w3m, links, or lynx and you'll see that the form still works and the page still updates, allowing for the easy creation of a TUI web application!"
+
+        req.Link {| href = "/request-response-cycle"; children = "Next: Request-Response Cycle Illustrated" |}
     ]
