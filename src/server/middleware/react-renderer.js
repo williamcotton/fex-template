@@ -82,5 +82,7 @@ export default ({ appLayout }) =>
       );
     };
 
+    res.renderErrorComponent = res.renderComponent;
+
     next();
   };

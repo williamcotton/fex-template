@@ -99,5 +99,15 @@ export default ({ app, appLayout }) =>
       res.send();
     };
 
+    res.renderErrorComponent = (content, options = {}) => {
+      const { title, description } = options;
+      const layout = options.layout || appLayout;
+      const { appContainer } = req.renderDocument({ title, description });
+      const root = app.root || createRoot(appContainer);
+      app.root = root;
+      root.render(React.createElement(layout, { content, req }));
+      res.status(500);
+    };
+
     next();
   };

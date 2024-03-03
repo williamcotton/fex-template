@@ -29,8 +29,10 @@ type ExpressReq =
 type ExpressRes =
   abstract member send : obj -> unit
   abstract member renderComponent : ReactElement -> unit
+  abstract member renderErrorComponent : ReactElement -> unit
   abstract member status : int -> unit
   abstract member redirect : string -> unit
+  abstract member redirectBack : obj -> unit
   abstract member navigate : string -> unit
   abstract member pageview : obj -> unit
   abstract member event : obj -> unit
@@ -49,5 +51,5 @@ let gql (query: string) (variables: obj) (options: obj) (req: ExpressReq)  : JS.
       let! result = req.gql query variables options
       return Ok result
     with
-    | ex -> return Error (sprintf "Error in query: %s" ex.Message)
+    | ex -> return Error ex.Message
   }

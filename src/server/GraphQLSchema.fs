@@ -79,14 +79,14 @@ let rootValueInitializer : obj =
     let setColor (input: string) (req: obj) =
         promise {
             req?session?color <- input?color
-            consoleLog ("write", input?color)
-            return {| success = true |}
+            return match input?color with
+                    | "red" | "green" | "blue" -> {| success = true |}
+                    | _ -> failwith "invalid-color"
         }
 
     let color _ (req: obj) =
         promise {
             let color = req?session?color
-            consoleLog ("read", color)
             return 
                 match color with
                 | null -> { color = "" }
