@@ -375,11 +375,11 @@ let createCombinedStepWithRequestStep requestStep ( title: string, stepIndex: in
                             | _ -> backgroundColor)
             svg.x(offsetX)
             svg.y(offsetY)
-            svg.width(494)
+            svg.width(322)
             svg.height(28)
         ]
         Svg.text [
-            svg.x(offsetX + 130)
+            svg.x(offsetX + 35)
             svg.y(offsetY + 20)
             svg.fontSize 18
             svg.fill color.white
@@ -391,32 +391,32 @@ let createCombinedStepWithRequestStep requestStep ( title: string, stepIndex: in
 let requestResponseCycleSvg requestStep =
     Svg.svg [
         svg.width (694) // Width to accommodate the elements
-        svg.height (300) // Adjusted height to fit the additional rows
+        svg.height (260) // Adjusted height to fit the additional rows
         svg.children [ 
             let createParallelStep = createParallelStepWithRequestStep requestStep
             let createCombinedStep = createCombinedStepWithRequestStep requestStep
 
             // Dynamically create SVG blocks for each step with specific background colors
             createParallelStep("HTTP Request", 0, 0, 0, "darkred")
-            createParallelStep ("Click", 0, 534, 0, "darkblue")
+            createParallelStep ("Click", 0, 162, 0, "darkblue")
 
-            createParallelStep ("Event Listener", 1, 534, 30, "darkblue")
+            createParallelStep ("Event Listener", 1, 162, 30, "darkblue")
             createParallelStep( "Socket Listener", 1, 0, 30, "darkred")
 
             createParallelStep("Express", 2, 0, 60, "darkred")
-            createParallelStep ( "Browser-Express", 2, 534, 60, "darkblue")
+            createParallelStep ("Browser-Express", 2, 162, 60, "darkblue")
 
             createParallelStep("Server Middleware", 3, 0, 90, "darkred")
-            createParallelStep("Client Middleware", 3, 534, 90, "darkblue")
+            createParallelStep("Client Middleware", 3, 162, 90, "darkblue")
 
-            createCombinedStep("Universal Request Handlers", 4, 100, 120, "purple")
-            createCombinedStep("Universal React Components", 5, 100, 150, "purple")
+            createCombinedStep("Universal Request Handlers", 4, 0, 120, "purple")
+            createCombinedStep("Universal React Components", 5, 0, 150, "purple")
 
             createParallelStep("Rendered HTML", 6, 0, 180, "darkred")
-            createParallelStep("Diffed DOM", 6, 534, 180, "darkblue")    
+            createParallelStep("Diffed DOM", 6, 162, 180, "darkblue")    
 
             createParallelStep("HTTP Response", 7, 0, 210, "darkred")
-            createParallelStep("DOM Update", 7, 534, 210, "darkblue")
+            createParallelStep("DOM Update", 7, 162, 210, "darkblue")
         ]
     ]
 
@@ -432,6 +432,32 @@ let RequestResponseCyclePage() =
 
         Html.h2 "Request-Response Cycle"
 
+        Html.div [
+            prop.className "request-response-cycle"
+            prop.children [
+                requestResponseCycleSvg requestStep
+                Html.p [
+                    prop.className "explanation"
+                    prop.children [
+                        Html.p [
+                            prop.children [
+                                match requestStep with
+                                | 0 -> Html.p "An HTTP request by the client initiates the communication cycle, requesting server resources. Similarly, user interactions like clicking a link are captured on the client side, indicating an intent to navigate or request new content."
+                                | 1 -> Html.p "On receiving an HTTP request, the server's socket listener springs into action, waiting to process incoming connections. Meanwhile, the client-side event listener monitors user actions, such as link clicks, to handle navigation programmatically, preventing default browser behavior."
+                                | 2 -> Html.p "Both server and client set up their Express applications to manage the request lifecycle. The server uses Express to define routes, middleware, and response handling, while the client uses Browser Express to mimic this structure for client-side navigation and state management."
+                                | 3 -> Html.p "Middleware on both ends plays a crucial role in processing requests and responses. Server and client middelware are developed in sync in order to enable the differing contexts of the web server and the web browser to handle the same request and response objects."
+                                | 4 -> Html.p "Universal request handlers are designed to run both on the server for initial page rendering and on the client for handling subsequent navigations or updates. This approach ensures a consistent rendering process across environments."
+                                | 5 -> Html.p "Universal React components enable writing UI code that runs both server-side and client-side, facilitating seamless rendering and rehydration of the app's UI. This strategy enhances performance and user experience by leveraging React's efficient DOM updates."
+                                | 6 -> Html.p "The server's response includes rendered HTML content for the requested page. The client-side flow involves diffing the existing DOM with the new content to apply only the necessary updates, minimizing browser reflow and repaint costs."
+                                | 7 -> Html.p "Completing the cycle, the server sends an HTTP response back to the client, which includes the requested content or data. On the client side, this response triggers updates to the DOM, reflecting changes in the UI based on the received data or user navigation actions."
+                                | _ -> null
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ]
+
         Html.p [
             Html.button [
                 prop.onClick (fun _ -> cycleRequestStep())
@@ -440,28 +466,6 @@ let RequestResponseCyclePage() =
             Html.button [
                 prop.onClick (fun _ -> cycleBackRequestStep())
                 prop.text "Cycle Backward"
-            ]
-        ]
-
-        requestResponseCycleSvg requestStep
-
-        Html.p [
-            prop.className "explanation"
-            prop.children [
-                Html.p [
-                    prop.children [
-                        match requestStep with
-                        | 0 -> Html.p "An HTTP request by the client initiates the communication cycle, requesting server resources. Similarly, user interactions like clicking a link are captured on the client side, indicating an intent to navigate or request new content."
-                        | 1 -> Html.p "On receiving an HTTP request, the server's socket listener springs into action, waiting to process incoming connections. Meanwhile, the client-side event listener monitors user actions, such as link clicks, to handle navigation programmatically, preventing default browser behavior."
-                        | 2 -> Html.p "Both server and client set up their Express applications to manage the request lifecycle. The server uses Express to define routes, middleware, and response handling, while the client uses Browser Express to mimic this structure for client-side navigation and state management."
-                        | 3 -> Html.p "Middleware on both ends plays a crucial role in processing requests and responses. Server middleware may involve authentication, data parsing, and session management, while client middleware adapts these concepts for the client, handling state updates and UI changes and creating req and res objects with the same interface for both environments."
-                        | 4 -> Html.p "Universal request handlers are designed to run both on the server for initial page rendering and on the client for handling subsequent navigations or updates. This approach ensures a consistent rendering process across environments."
-                        | 5 -> Html.p "Universal React components enable writing UI code that runs both server-side and client-side, facilitating seamless rendering and rehydration of the app's UI. This strategy enhances performance and user experience by leveraging React's efficient DOM updates."
-                        | 6 -> Html.p "The server's response includes rendered HTML content for the requested page. The client-side flow involves diffing the existing DOM with the new content to apply only the necessary updates, minimizing browser reflow and repaint costs."
-                        | 7 -> Html.p "Completing the cycle, the server sends an HTTP response back to the client, which includes the requested content or data. On the client side, this response triggers updates to the DOM, reflecting changes in the UI based on the received data or user navigation actions."
-                        | _ -> null
-                    ]
-                ]
             ]
         ]
 

@@ -27,6 +27,7 @@ p {
 p {
   line-height: 1.618em;
   font-size: 1em;
+  padding-left: 0.1em;
 
   @media (min-width: 790px) {
     font-size: 1.1em;
@@ -114,6 +115,13 @@ form {
   }
 }
 
-.explanation {
-  font-size: 0.9em;
+
+
+.request-response-cycle {
+  display: flex;
+
+  .explanation {
+    font-size: 0.9em;
+    width: 100%;
+  }
 }
