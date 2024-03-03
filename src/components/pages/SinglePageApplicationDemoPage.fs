@@ -21,7 +21,7 @@ let SinglePageApplicationDemoPage(props: {| color : string |}) =
     React.fragment [
         Html.h2 "Single Page Application Demo"
 
-        Html.p "This first approach uses the query string parameters of the URL to control the state of the page. This is ideal for sharing links and bookmarks, but it can be difficult to manage the state of complex applications."
+        Html.p "This first approach uses the query string parameters of the URL to control the state of the page. This is ideal for sharing links and bookmarks, but it can be difficult to manage the state of complex applications. This approach will also work without JavaScript enabled."
 
         let queryColor = req.query?color
 
@@ -34,7 +34,7 @@ let SinglePageApplicationDemoPage(props: {| color : string |}) =
             prop.children [ Html.p "Click the buttons to change the color of this text." ]
         ]
 
-        Html.p "This second approach uses a GraphQL mutation to update the state of the page. This is ideal for complex applications that require a lot of persistant state management."
+        Html.p "This second approach uses a GraphQL mutation in this case to update and persist the state of the page in the user's session data. This could just as easily use a separate CORS-enabled API with REST endpoints backed by a SQL database. This is ideal for complex applications that require a lot of persistant state management. This is another approach that will work without JavaScript enabled."
 
         let color = props?color
 
@@ -47,7 +47,7 @@ let SinglePageApplicationDemoPage(props: {| color : string |}) =
             prop.children [ Html.p "Click the buttons to change the color of this text." ]
         ]
 
-        Html.p "This third approach uses a useStore hook to manage the state of the page. This is ideal for complex applications that don't need to track or persist parts of the state of the application."
+        Html.p "This third approach uses a useStore hook to manage the state of the page. This is ideal for complex applications that don't need to track or persist parts of the state of the application. Since this is client-side only, it's not ideal for sharing links or bookmarks nor will it work without JavaScript enabled. Temporary state is best used to set up the conditions for creating persistent state."
 
         let (stateColor, setStateColor) = React.useState ""
 
@@ -60,6 +60,9 @@ let SinglePageApplicationDemoPage(props: {| color : string |}) =
             prop.children [ Html.p "Click the buttons to change the color of this text." ]
         ]
 
+        Html.p "Together the three approaches demonstrate the flexibility of Fex to handle different state management needs and can be mixed and matched depending on then needs of the single page application."
+
+        req.Link {| href = "/caveats"; children = "Next: Caveats" |}
     ]
 
 spa.get("/", fun req res next ->

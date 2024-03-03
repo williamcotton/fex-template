@@ -10,7 +10,7 @@ let LinksAndFormElementPage(props: {| inputName : string option |}) =
     React.fragment [
         Html.h3 "Link Elements"
 
-        Html.p "Navigation is managed by React components, facilitating client-side routing that operates as a single-page application with dynamic data fetching. At the same time the Fex architectural pattern ensures the server-side rendering of the components."
+        Html.p "Navigation is managed by React components, facilitating client-side routing that operates as a single-page application with dynamic data fetching. At the same time the Fex architectural pattern ensures the server-side rendering of the components, guarenteeing interaction before JavaScript is loaded."
 
         Html.p "Example navigation bar component:"
 

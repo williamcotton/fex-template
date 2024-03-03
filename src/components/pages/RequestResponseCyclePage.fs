@@ -508,6 +508,6 @@ let RequestResponseCyclePage() =
             ]
         ]
         
-        req.Link {| href = "/caveats"; children = "Next: Caveats" |}
+        req.Link {| href = "/single-page-application-demo"; children = "Next: Single Page Application Demo" |}
 
     ]

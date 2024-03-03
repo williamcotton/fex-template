@@ -72,6 +72,11 @@ blockquote {
   padding-left: 1em;
 }
 
+button, input[type='submit'] {
+  font-size: 1em;
+  margin-right: 0.5em;
+}
+
 b {
   font-weight: bold;
 }
