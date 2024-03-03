@@ -19,6 +19,7 @@
     <Compile Include="src/components/pages/GithubStatusPage.fs" />
     <Compile Include="src/components/pages/RequestResponseCyclePage.fs" />
     <Compile Include="src/components/pages/SinglePageApplicationDemoPage.fs" />
+    <Compile Include="src/components/pages/AnalyticsRouterPage.fs" />
     <Compile Include="src/App.fs" />
     <Compile Include="src/server/AnalyticsRouter.fs" />
     <Compile Include="src/server/Server.fs" />

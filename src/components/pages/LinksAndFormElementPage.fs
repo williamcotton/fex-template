@@ -28,7 +28,7 @@ let NavigationBar(props: {| greeting : Greeting |}) =
 
         Html.h3 "Form Elements"
 
-        Html.p "Forms integrate seamlessly, functioning on both client and server sides, enabling interactions without page reloads. The server also handles these form submissions, ensuring functionality even without JavaScript."
+        Html.p "Forms are the core of client interaction in a Fex application and integrate seamlessly, functioning on both client and server sides, enabling interactions without page reloads. The server also handles these form submissions, ensuring functionality even without JavaScript."
 
         Html.p "Example form component and handler:"
 
@@ -67,14 +67,13 @@ let LinksAndFormElementPage(props: {| inputName : string option |}) =
         | Some name -> (Html.p ("Hello, " + name + "!"))
         | None -> Html.p "Please enter your name:"
 
-        req.Form {| action = "/setName"; method = "post"; children = [
+        req.Form {| id = "setName"; action = "/setName#setName"; method = "post"; children = [
+            
             Html.input [ prop.type' "text"; prop.key "inputName"; prop.name "inputName"; prop.placeholder "Name" ]
             Html.input [ prop.type' "submit"; prop.key "submit"; prop.value "Submit" ]
         ] |}
 
         Html.p "If you disable JavaScript in your browser, form submissions will continue to work and update the state of the page, albeit with the obvious need for a page reload."
-
-        Html.p "In some instances it might make sense to use a hook like useReducer to manage the state of some part of the page, but in most cases a simple stateless component will suffice, following the general approach of working with a functional programming language like F#."
 
         req.Link {| href = "/middleware"; children = "Next: Parallel Middleware" |}
     ]

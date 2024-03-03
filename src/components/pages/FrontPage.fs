@@ -28,43 +28,45 @@ let Counter() =
     ]
 
 [<ReactComponent>]
-let FrontPageExample(props: {| greeting : Greeting |}) =
-    let req = React.useContext requestContext
-    React.fragment [
-        Html.h2 props.greeting.heading
-        Html.p props.greeting.content
-        req.Link {| href = "/form-elements"; children = "Next: Form Elements" |}
-    ]
-
-[<ReactComponent>]
 let FrontPage(props: {| greeting : Greeting |}) =
     let req = React.useContext requestContext
     React.fragment [
         Html.h2 props.greeting.heading
 
+        Html.h4 props.greeting.subheading
+
         Html.p props.greeting.content
 
         Html.h3 "Universal Route Handlers"
 
-        Html.p "Fex enables efficient server-side rendering of static HTML through simple route handlers, data queries, and React components. This initial rendering delivers fast load times."
+        Html.p "Fex enables efficient server-side rendering of static HTML through simple route handlers, data queries, and React components. This initial server-side rendering delivers fast load times."
         
         Html.p "Meanwhile, the same route handlers and components power client-side interactions without full page reloads allowing for all of the benefits of interactive single-page applications."
 
-        Html.p "Here's an example of a universal route handler:"
+        Html.p "Here's an example of a Felix component and a Fex route handler:"
 
         CodeBlock {| 
             lang = "fsharp"; code =
-"""app.get("/", fun req res next ->
+"""[<ReactComponent>]
+let ShowGreeting(props: {| greeting : Greeting |}) =
+    React.fragment [
+        Html.h2 props.greeting.heading
+        Html.h4 props.greeting.subheading
+        Html.p props.greeting.content
+    ]
+
+app.get("/", fun req res next ->
     promise {
         let! response = 
             req 
-            |> gql "query { greeting { heading content } }" {||}
+            |> gql "query { greeting { heading subheading content } }" {||}
             
         match response with
         | Ok response -> 
             let greeting : Greeting = response?greeting
             ShowGreeting ({| greeting = greeting |})
             |> res.renderComponent
+        | Error message -> next()    
 )
 """     |}
 
@@ -72,7 +74,7 @@ let FrontPage(props: {| greeting : Greeting |}) =
 
         Html.h3 "Universal React Components"
 
-        Html.p "React components can be crafted in F# using Feliz, allowing for server-rendered HTML and client-side interactivity. Here's an example of both a server rendered and an interactive counter component, which should look very familiar to a React developer:"
+        Html.p "React components can be crafted in F# using Feliz, allowing for both server-rendered HTML and client-side interactivity. Here's an example of both a server rendered and an interactive counter component, which should look very familiar to a React developer:"
 
         Counter()
 

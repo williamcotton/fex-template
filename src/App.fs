@@ -17,6 +17,7 @@ open RequestResponseCyclePage
 open WeatherPage
 open GithubStatusPage
 open SinglePageApplicationDemoPage
+open AnalyticsRouterPage
 
 
 let universalApp (app: ExpressApp) =
@@ -24,7 +25,7 @@ let universalApp (app: ExpressApp) =
         promise {
             let! response = 
                 req 
-                |> gql "query { greeting { heading content } }" {||} {||}
+                |> gql "query { greeting { heading subheading content } }" {||} {||}
                 
             match response with
             | Ok response -> 
@@ -145,6 +146,10 @@ let universalApp (app: ExpressApp) =
     )
 
     app.``use`` ("/single-page-application-demo", SinglePageApplicationDemoRouter)
+
+    app.get("/analytics-router", fun req res next ->
+        AnalyticsRouterPage () |> res.renderComponent
+    )
     
     app.``use`` (fun (req: ExpressReq) (res: ExpressRes) next ->
         res.status 404 |> ignore

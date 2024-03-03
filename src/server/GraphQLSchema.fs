@@ -5,6 +5,7 @@ open Global
 
 type Greeting = {
     heading: string
+    subheading: string
     content: string
 }
 
@@ -21,6 +22,7 @@ let schemaString = "
 
   type Greeting {
     heading: String
+    subheading: String
     content: String
   }
 
@@ -53,7 +55,8 @@ let rootValueInitializer : obj =
         promise {
             let greeting = {
                 heading = "Fex: F# and Express for Web Development"
-                content = "Fex is an architectural pattern for building web applications with Express in JavaScript, utilizing Fable, Fable.React, and Feliz. It's not a framework but an approach that emphasizes simplicity and flexibility. By leveraging both the `express` npm module for server-side and the `browser-express` module for client-side operations, it allows developers to craft route handlers, middleware, and React components that seamlessly work across both environments. The goal is to simplify web development while giving developers the freedom to adapt their architecture as their application evolves to meet user needs."
+                subheading = "A Unified Server-Client Architecture"
+                content = "Fex is an architectural pattern for building web applications with Express in JavaScript, utilizing the F# Fable compiler and Feliz for React components. It's not a framework but an approach that emphasizes separation of concerns, simplicity and flexibility. By leveraging both the `express` npm module for server-side and the `browser-express` module for client-side operations, it allows developers to craft route handlers, middleware, and React components that seamlessly work across both environments. The goal is to simplify web development while giving developers the freedom to adapt their architecture as their application evolves to meet user needs."
             }
             return greeting
         }
