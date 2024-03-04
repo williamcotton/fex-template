@@ -74,6 +74,33 @@ let textInputFieldWithError fieldName placeholder (defaultValue: string) (errors
     else
         Html.input [ prop.type' "text"; prop.key fieldName; prop.name fieldName; prop.placeholder placeholder; prop.defaultValue defaultValue ]
 
+let textInputFieldWithStringListError fieldName placeholder (defaultValue: string) (errors : string array option) =
+    let errors = defaultArg errors [||]
+    let hasNoErrors = Array.isEmpty errors
+
+    // Function to get the error messages for the given fieldName. If there are errors, it returns a list of Html.p elements, each containing an error message.
+    let getErrorElements =
+        if hasNoErrors then
+            [||]
+        else
+            errors
+            |> Array.map (fun errorMsg -> Html.p [ prop.text errorMsg; prop.className "error" ])
+
+    // If there are errors for the fieldName, create a fragment containing the input field (with an "error" class) and all associated error messages.
+    // Otherwise, create a single input field without the "error" class.
+    if hasNoErrors then 
+        Html.input [ prop.type' "text"; prop.name fieldName; prop.placeholder placeholder; prop.defaultValue defaultValue ]
+    else
+        React.fragment [
+            Html.input [ prop.type' "text"; prop.name fieldName; prop.placeholder placeholder; prop.className "error"; prop.defaultValue defaultValue ]
+            yield! getErrorElements
+        ]
+
+let extractErrors (errorsMap : Map<string, list<string>>) fieldName =
+    match errorsMap.TryGetValue(fieldName) with
+    | true, errors -> errors |> List.toArray
+    | false, _ -> [||]
+
 
 [<Emit("Object.keys($0).every(key => $0[key] === '' || $0[key] === null || $0[key] === undefined)")>]
 let inline isObjEmpty (requestBody: obj) : bool = jsNative

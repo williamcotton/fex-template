@@ -30,7 +30,7 @@ let textInputFieldWithError fieldName placeholder (defaultValue: string) (errors
         Html.input [ prop.type' "text"; prop.key fieldName; prop.name fieldName; prop.placeholder placeholder; (prop.defaultValue defaultValue) ]
 
 [<ReactComponent>]
-let SinglePageApplicationAdvancedDemoPage(props: {| color : string; name : string; error : string; inputName : string; inputEmail : string |}) =
+let SinglePageApplicationAdvancedDemoPage(props: {| color : string; name : string; error : string; inputName : string; inputEmail : string; inputNameErrors : string array; inputEmailErrors : string array |}) =
     let req = React.useContext requestContext
     React.fragment [
       
@@ -39,20 +39,8 @@ let SinglePageApplicationAdvancedDemoPage(props: {| color : string; name : strin
         let inputName = props.inputName
         let inputEmail = props.inputEmail
         let error = props.error
-
-        // Defining a function to update the error map based on the error prop
-        let updateErrorMap (error: string) (errors: Map<string, string>): Map<string, string> =
-            match error with
-            | "invalid-color" -> Map.add "color" "Invalid color. Please select red, green, or blue." errors
-            | "invalid-name" -> Map.add "inputName" "Name must be between 3 and 64 characters" errors
-            | _ -> errors
-
-
-        consoleLog error
-
-        // Initialize errors map and update based on props.error
-        let errors = Map.empty
-        let errorMap = updateErrorMap error errors
+        let inputNameErrors = props.inputNameErrors
+        let inputEmailErrors = props.inputEmailErrors
 
         match name with
         | "" -> Html.p "Please enter your name:"
@@ -82,14 +70,14 @@ let SinglePageApplicationAdvancedDemoPage(props: {| color : string; name : strin
                 prop.className "form-group"
                 prop.children [
                     Html.label [ prop.htmlFor "inputName"; prop.text "Name" ]
-                    textInputFieldWithError "inputName" "Name" inputName errors
+                    textInputFieldWithStringListError "inputName" "Name" inputName (Some inputNameErrors)
                 ]
             ]
             Html.div [
                 prop.className "form-group"
                 prop.children [
                     Html.label [ prop.htmlFor "inputEmail"; prop.text "Email" ]
-                    textInputFieldWithError "inputEmail" "Email" inputEmail errors
+                    textInputFieldWithStringListError "inputEmail" "Email" inputEmail (Some inputEmailErrors)
                 ]
             ]
             Html.input [ prop.type' "submit"; prop.key "submit"; prop.value "Submit" ]
@@ -98,6 +86,10 @@ let SinglePageApplicationAdvancedDemoPage(props: {| color : string; name : strin
 
 spaa.get("/", fun req res next ->
     let error = req.query?error
+    let inputEmailErrors = req.query?inputEmailErrors
+    let inputNameErrors = req.query?inputNameErrors
+    let inputName = req.query?inputName
+    let inputEmail = req.query?inputEmail
     promise {
         let! response = 
             req 
@@ -113,7 +105,7 @@ spaa.get("/", fun req res next ->
         | Ok response -> 
             let color = response?color?color
             let name = response?name?name
-            SinglePageApplicationAdvancedDemoPage {| color = color; name = name; error = error; inputName = ""; inputEmail = "" |}
+            SinglePageApplicationAdvancedDemoPage {| color = color; name = name; error = error; inputName = inputName; inputEmail = inputEmail; inputNameErrors = inputNameErrors; inputEmailErrors = inputEmailErrors |}
             |> res.renderComponent
         | Error message -> next()
     } |> ignore
@@ -140,8 +132,6 @@ spaa.post("/set-name", fun req res next ->
             req 
             |> gql "mutation ($name: String) { setName(inputName: $name) { success } }" 
                 {| name = name |} {||}
-
-        consoleLog response
 
         match response with
         | Ok response -> res.redirectBack()
@@ -173,13 +163,13 @@ spaa.post("/form-validation", fun req res next ->
             |}
         }
     
-    let errors = 
-        match validatedInput with
-        | Ok validInput -> Map.empty
-        | Error e -> e |> ValidationErrors.toMap
-
+    // Consolidate error handling into a single match statement
     match validatedInput with
-      | Ok response -> res.redirectBack({| inputName = inputName; inputEmail = inputEmail |})
-      | Error message -> res?redirectBack({| error = errors |})
-
+    | Ok _ -> 
+        res.redirectBack({| inputName = inputName; inputEmail = inputEmail |})
+    | Error e ->
+        let errorsMap = e |> ValidationErrors.toMap
+        let inputNameErrors = extractErrors errorsMap "inputName"
+        let inputEmailErrors = extractErrors errorsMap "inputEmail"
+        res?redirectBack({| inputNameErrors = inputNameErrors; inputEmailErrors = inputEmailErrors; inputName = inputName; inputEmail = inputEmail |})
 )
