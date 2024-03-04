@@ -17,6 +17,7 @@ open RequestResponseCyclePage
 open WeatherPage
 open GithubStatusPage
 open SinglePageApplicationDemoPage
+open SinglePageApplicationAdvancedDemoPage
 open AnalyticsRouterPage
 
 
@@ -92,21 +93,26 @@ let universalApp (app: ExpressApp) =
             let msg = fun _ -> $"{fieldName} must be between 3 and 64 characters"
             Check.WithMessage.String.betweenLen 3 64 msg
 
+        let emailValidator =
+            ValidatorGroup(Check.WithMessage.String.betweenLen 7 256 (fun _ -> "Email must be between 7 and 256 characters"))                                                  
+                .And(Check.WithMessage.String.pattern @"[^@]+@[^\.]+\..+" (fun _ -> "Please provide a valid email address"))
+                .Build()
+
         let validatedInput =  
             validate {
                 let! inputName = nameValidator "Name" "inputName" inputName
-                and! inputEmail = nameValidator "Email address" "inputEmail" inputEmail
-                return {
+                and! inputEmail = emailValidator "inputEmail" inputEmail
+                return {|
                     inputName = inputName
                     inputEmail = inputEmail
-                }
+                |}
             }
-
+        
         let errors = 
             match validatedInput with
             | Ok validInput -> Map.empty
             | Error e -> e |> ValidationErrors.toMap
-
+            
         FormValidationPage ({| errors = errors; requestBody = requestBody |})
         |> res.renderComponent
     )
@@ -146,6 +152,8 @@ let universalApp (app: ExpressApp) =
     )
 
     app.``use`` ("/single-page-application-demo", SinglePageApplicationDemoRouter)
+    
+    app.``use`` ("/single-page-application-advanced-demo", SinglePageApplicationAdvancedDemoRouter)
 
     app.get("/analytics-router", fun req res next ->
         AnalyticsRouterPage () |> res.renderComponent

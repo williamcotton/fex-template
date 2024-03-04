@@ -64,7 +64,10 @@ let rootValueInitializer : obj =
     let setName (input: string) (req: obj) =
         promise {
             req?session?inputName <- input?inputName
-            return {| success = true |}
+            consoleLog input
+            return match input?inputName with
+                    | null | "" -> failwith "invalid-name"
+                    | _ -> {| success = true |}
         }
 
     let name _ (req: obj) =
@@ -72,8 +75,8 @@ let rootValueInitializer : obj =
             let inputName = req?session?inputName
             return 
                 match inputName with
-                | null -> { name = "Anonymous" }
-                | _ -> { name = inputName }    
+                | null | "" -> { name = "" }
+                | _ -> { name = inputName }
         }
 
     let setColor (input: string) (req: obj) =

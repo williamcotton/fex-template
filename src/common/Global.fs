@@ -48,17 +48,32 @@ let formatDateString inputDate =
     let dayWithOrdinal = addOrdinal parsedDate.Day
     sprintf "%s %s, %d" monthName dayWithOrdinal parsedDate.Year
 
-let textInputFieldWithError fieldName placeholder (defaultValue: string) (errors : Map<string,string list>) =
-    let flattenedErrors = errors |> Map.map(fun k v -> String.concat " " v)
+let textInputFieldWithError fieldName placeholder (defaultValue: string) (errors : Map<string, string list>) =
+    consoleLog errors
+
+    // Function to check if there are any errors for the given fieldName
     let hasError fieldName = errors.ContainsKey(fieldName)
-    let getError fieldName = if hasError fieldName then flattenedErrors.[fieldName] else ""
+
+    consoleLog (fieldName, hasError fieldName)
+
+    // Function to get the error messages for the given fieldName. If there are errors, it returns a list of Html.p elements, each containing an error message.
+    let getErrorElements fieldName =
+        if hasError fieldName then
+            errors.[fieldName]
+            |> List.map (fun errorMsg -> Html.p [ prop.text errorMsg; prop.className "error" ])
+        else
+            []
+
+    // If there are errors for the fieldName, create a fragment containing the input field (with an "error" class) and all associated error messages.
+    // Otherwise, create a single input field without the "error" class.
     if hasError fieldName then 
         React.fragment [
-            Html.input [ prop.type' "text"; prop.key fieldName; prop.name fieldName; prop.placeholder placeholder; prop.className "error"; (prop.defaultValue defaultValue) ]
-            Html.p [ prop.text (getError fieldName); prop.className "error"]
+            Html.input [ prop.type' "text"; prop.key fieldName; prop.name fieldName; prop.placeholder placeholder; prop.className "error"; prop.defaultValue defaultValue ]
+            yield! getErrorElements fieldName
         ]
     else
-        Html.input [ prop.type' "text"; prop.key fieldName; prop.name fieldName; prop.placeholder placeholder; (prop.defaultValue defaultValue) ]
+        Html.input [ prop.type' "text"; prop.key fieldName; prop.name fieldName; prop.placeholder placeholder; prop.defaultValue defaultValue ]
+
 
 [<Emit("Object.keys($0).every(key => $0[key] === '' || $0[key] === null || $0[key] === undefined)")>]
 let inline isObjEmpty (requestBody: obj) : bool = jsNative
