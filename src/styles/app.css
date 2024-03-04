@@ -27,7 +27,6 @@ p {
 p {
   line-height: 1.618em;
   font-size: 1em;
-  padding-left: 0.1em;
 
   @media (min-width: 790px) {
     font-size: 1.1em;
@@ -120,8 +119,17 @@ form {
 .request-response-cycle {
   display: flex;
 
+  @media (max-width: 540px) {
+    display: block;
+  }
+
+  svg {
+    min-width: 322px;
+  }
+
   .explanation {
     font-size: 0.9em;
     width: 100%;
+    margin-left: 1em;
   }
 }

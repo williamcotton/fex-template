@@ -390,7 +390,7 @@ let createCombinedStepWithRequestStep requestStep ( title: string, stepIndex: in
 [<ReactComponent>]
 let requestResponseCycleSvg requestStep =
     Svg.svg [
-        svg.width (694) // Width to accommodate the elements
+        svg.width (322) // Width to accommodate the elements
         svg.height (260) // Adjusted height to fit the additional rows
         svg.children [ 
             let createParallelStep = createParallelStepWithRequestStep requestStep
