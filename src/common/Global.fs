@@ -3,6 +3,7 @@ module Global
 open Fable.Core
 open Feliz
 open System
+open Validus
 
 [<Emit("console.log($0)")>]
 let consoleLog text: unit = jsNative
@@ -96,7 +97,8 @@ let textInputFieldWithStringListError fieldName placeholder (defaultValue: strin
             yield! getErrorElements
         ]
 
-let extractErrors (errorsMap : Map<string, list<string>>) fieldName =
+let extractErrors (validationErrors : ValidationErrors) fieldName =
+    let errorsMap = validationErrors |> ValidationErrors.toMap
     match errorsMap.TryGetValue(fieldName) with
     | true, errors -> errors |> List.toArray
     | false, _ -> [||]

@@ -25,5 +25,12 @@ export default () => (req, res, next) => {
     res.navigate(req.baseUrl, query, true);
   };
 
+  res.redirectBackAndMergeQuery = (query) => {
+    console.log("req.headers", req.headers);
+    const referrer = req.headers.referer;
+    const referrerUrl = new URL(referrer);
+    const referrerQuery = qs.parse(referrerUrl.search, { ignoreQueryPrefix: true });
+    res.navigate(req.baseUrl, { ...referrerQuery, ...query }, true);
+  };
   next();
 };

@@ -13,11 +13,11 @@ let router : unit -> ExpressApp = jsNative
 
 let SinglePageApplicationDemoRouter = router()
 
-let spa = SinglePageApplicationDemoRouter
+let private spa = SinglePageApplicationDemoRouter
 
 
 [<ReactComponent>]
-let CodeBlock1 =
+let BaseRouteCodeBlock =
     CodeBlock {| lang = "fsharp"; code =
 """spa.get("/", fun req res next ->
     let queryColor = req.query?color
@@ -42,7 +42,7 @@ let CodeBlock1 =
     |}
 
 [<ReactComponent>]
-let CodeBlock2 =
+let QueryStringButtonsCodeBlock =
     CodeBlock {| lang = "fsharp"; code =
 """req.FormButton {| baseAction = "/set-color-query"; name = "color"; value = "red"; buttonText = "Red"|}
 req.FormButton {| baseAction = "/set-color-query"; name = "color"; value = "green"; buttonText = "Green"|}
@@ -55,7 +55,7 @@ match props.qError with
     |}
 
 [<ReactComponent>]
-let CodeBlock3 =
+let QueryStringPostHandlerCodeBlock =
     CodeBlock {| lang = "fsharp"; code =
 """spa.post("/set-color-query", fun req res next ->
     let color : string = req.body?color
@@ -67,7 +67,7 @@ let CodeBlock3 =
     |}   
 
 [<ReactComponent>]
-let CodeBlock4 =
+let GraphQLButtonsCodeBlock =
     CodeBlock {| lang = "fsharp"; code =
 """req.FormButton {| baseAction = "/"; name = "color"; value = "red"; buttonText = "Red"|}
 req.FormButton {| baseAction = "/"; name = "color"; value = "green"; buttonText = "Green"|}
@@ -80,7 +80,7 @@ match props.gqlError with
     |}
 
 [<ReactComponent>]
-let CodeBlock5 =
+let GraphQLPostHandlerCodeBlock =
     CodeBlock {| lang = "fsharp"; code =
 """spa.post("/", fun req res next ->
     let color : string = req.body?color
@@ -101,7 +101,7 @@ let CodeBlock5 =
     |}
 
 [<ReactComponent>]
-let CodeBlock6 =
+let UseStateButtonsCodeBlock =
     CodeBlock {| lang = "fsharp"; code =
 """let (stateColor, setStateColor) = React.useState ""
 
@@ -116,21 +116,21 @@ match stateColor with
     |}
 
 [<ReactComponent>]
-let SinglePageApplicationDemoPage(props: {| gqlColor : string; queryColor : string; gqlError : string; qError : string |}) =
+let SinglePageApplicationDemoPage(props: {| gqlName: string; gqlColor : string; queryColor : string; gqlError : string; qError : string |}) =
     let req = React.useContext requestContext
     React.fragment [
         Html.h2 "Single Page Application Demo"
 
         Html.p "This page demonstrates three different approaches to managing the state of a single page application."
 
-        CodeBlock1
+        BaseRouteCodeBlock
 
         Html.h3 [ prop.text "Query String Parameters"; prop.id "setColorQuery" ]
 
         Html.p "This first approach uses the query string parameters of the URL to control the state of the page. This is ideal for sharing links and bookmarks, but it can be difficult to manage the state of complex applications. This approach will also work without JavaScript enabled."
 
-        CodeBlock2
-        CodeBlock3
+        QueryStringButtonsCodeBlock
+        QueryStringPostHandlerCodeBlock
 
         req.FormButton {| baseAction = "/set-color-query#setColorQuery"; name = "color"; value = "red"; buttonText = "Red"|}
         req.FormButton {| baseAction = "/set-color-query#setColorQuery"; name = "color"; value = "green"; buttonText = "Green"|}
@@ -150,16 +150,19 @@ let SinglePageApplicationDemoPage(props: {| gqlColor : string; queryColor : stri
 
         Html.p "This second approach uses a GraphQL mutation in this case to update and persist the state of the page in the user's session data. This could just as easily use a separate CORS-enabled API with REST endpoints backed by a SQL database. This is ideal for complex applications that require a lot of persistant state management. This is another approach that will work without JavaScript enabled."
 
-        CodeBlock4
-
-        CodeBlock5
+        GraphQLButtonsCodeBlock
+        GraphQLPostHandlerCodeBlock
 
         let gqlColor = props.gqlColor
 
-        req.FormButton {| baseAction = "/#setColorGql"; name = "color"; value = "red"; buttonText = "Red"|}
-        req.FormButton {| baseAction = "/#setColorGql"; name = "color"; value = "green"; buttonText = "Green"|}
-        req.FormButton {| baseAction = "/#setColorGql"; name = "color"; value = "blue"; buttonText = "Blue"|}
-        req.FormButton {| baseAction = "/#setColorGql"; name = "color"; value = "error"; buttonText = "Error"|}
+        let name = props.gqlName
+
+        Html.p ("Hello, " + name)
+
+        req.FormButton {| baseAction = "/set-color-gql#setColorGql"; name = "color"; value = "red"; buttonText = "Red"|}
+        req.FormButton {| baseAction = "/set-color-gql#setColorGql"; name = "color"; value = "green"; buttonText = "Green"|}
+        req.FormButton {| baseAction = "/set-color-gql#setColorGql"; name = "color"; value = "blue"; buttonText = "Blue"|}
+        req.FormButton {| baseAction = "/set-color-gql#setColorGql"; name = "color"; value = "error"; buttonText = "Error"|}
 
         match props.gqlError with
         | "invalid-color" -> Html.p "Invalid color. Please select red, green, or blue."
@@ -174,7 +177,7 @@ let SinglePageApplicationDemoPage(props: {| gqlColor : string; queryColor : stri
 
         Html.p "This third approach uses a useStore hook to manage the state of the page. This is ideal for complex applications that don't need to track or persist parts of the state of the application. Since this is client-side only, it's not ideal for sharing links or bookmarks nor will it work without JavaScript enabled. Temporary state is best used to set up the conditions for creating persistent state."
 
-        CodeBlock6
+        UseStateButtonsCodeBlock
 
         let (stateColor, setStateColor) = React.useState ""
 
@@ -199,63 +202,46 @@ let SinglePageApplicationDemoPage(props: {| gqlColor : string; queryColor : stri
 
 spa.get("/", fun req res next ->
     let queryColor = req.query?color
-    let qError =
-        match req.query?color with
-        | "red" | "green" | "blue" -> ""
-        | _ -> "invalid-color"
+    let qError = req.query?qError
+    let gqlError = req.query?gqlError
 
     promise {
         let! response = 
             req 
-            |> gql "query { color { color } }" {||} {| cache = false |}
-            
+            |> gql "query { 
+                color { color } 
+                name { name }
+            }" {||} {| cache = false |}
+
         match response with
         | Ok response -> 
             let gqlColor = response?color?color
-            SinglePageApplicationDemoPage {| gqlColor = gqlColor; queryColor = queryColor; gqlError = ""; qError = qError |}
+            consoleLog gqlColor
+            let gqlName = response?name?name
+            consoleLog gqlName
+            SinglePageApplicationDemoPage {| gqlName = gqlName; gqlColor = gqlColor; queryColor = queryColor; gqlError = gqlError; qError = qError |}
             |> res.renderComponent
         | Error message -> next()
+    } |> ignore
+)
+
+spa.post("/set-color-gql", fun req  res next ->
+    let color : string = req.body?color
+    promise {
+        let! response = 
+            req 
+            |> gql "mutation ($color: String) { setColor(color: $color) { success } }" 
+                {| color = color |} {||}
+
+        match response with
+        | Ok response -> res.redirect("back")
+        | Error message -> res.redirectBackAndMergeQuery({| gqlError = message |})
     } |> ignore
 )
 
 spa.post("/set-color-query", fun req res next ->
     let color : string = req.body?color
     match color with
-    | "red" | "green" | "blue" -> 
-        res?redirectBack({| color = color |})
-    | _ -> res?redirectBack({| error = "invalid-color" |})
-)
-
-spa.post("/", fun req res next ->
-    let color : string = req.body?color
-    promise {
-        let! response = 
-            req 
-            |> gql "mutation ($color: String) { setColor(color: $color) { success } }" 
-                {| color = color |} {||}
-
-        match response with
-        | Ok response ->
-            res.redirectBack()
-        | Error message ->
-            SinglePageApplicationDemoPage ({| gqlColor = ""; queryColor = ""; gqlError = message; qError = "" |})
-            |> res.renderErrorComponent
-    } |> ignore
-)
-
-spa.post("/set-color-gql", fun req res next ->
-    let color : string = req.body?color
-    promise {
-        let! response = 
-            req 
-            |> gql "mutation ($color: String) { setColor(color: $color) { success } }" 
-                {| color = color |} {||}
-
-        match response with
-        | Ok response ->
-            res.redirectBack()
-        | Error message ->
-            SinglePageApplicationDemoPage ({| gqlColor = ""; queryColor = ""; gqlError = message; qError = "" |})
-            |> res.renderErrorComponent
-    } |> ignore
+    | "red" | "green" | "blue" -> res?redirectBack({| color = color |})
+    | _ -> res?redirectBack({| qError = "invalid-color" |})
 )

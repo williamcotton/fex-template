@@ -65,6 +65,15 @@ export default ({ defaultTitle }) =>
       res.navigate(req.baseUrl, query);
     };
 
+    res.redirectBackAndMergeQuery = (query) => {
+      const referrer = req.headers.referer;
+      const referrerUrl = new URL(referrer);
+      const referrerQuery = qs.parse(referrerUrl.search, {
+        ignoreQueryPrefix: true,
+      });
+      res.navigate(req.baseUrl, { ...referrerQuery, ...query }, true);
+    };
+
     res.cacheQuery = (key, data) => {
       res.expressLink.queryCache[key] = data;
     };

@@ -14,8 +14,11 @@ export default ({ appLayout }) =>
     req.Link = Link;
 
     const Form = (props) => {
-      const mergedProps = { ...props };
+      let mergedProps = { ...props };
       const { children } = mergedProps;
+      mergedProps.action = props.baseAction
+        ? req.baseUrl + props.baseAction
+        : props.action;
       delete mergedProps.children;
       delete mergedProps.baseAction;
       delete mergedProps.buttonText;
