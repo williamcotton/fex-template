@@ -195,9 +195,9 @@ let SinglePageApplicationDemoPage(props: {| gqlName: string; gqlColor : string; 
             prop.children [ Html.p "Click the buttons to change the color of this text." ]
         ]
 
-        Html.p "Together the three approaches demonstrate the flexibility of Fex to handle different state management needs and can be mixed and matched depending on then needs of the single page application."
+        Html.p "Together the three approaches demonstrate the flexibility of Fex to handle different state management needs and can be mixed and matched depending on then needs of the single page application. We'll see more of this approach in the next section."
 
-        req.Link {| href = "/analytics-router"; children = "Next: Analytics Router" |}
+        req.Link {| href = "/single-page-application-advanced-demo"; children = "Next: Single Page Application Advanced Demo" |}  
     ]
 
 spa.get("/", fun req res next ->

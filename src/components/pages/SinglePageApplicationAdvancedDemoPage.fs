@@ -43,11 +43,12 @@ type Name = {
 }
 
 [<ReactComponent>]
-let SinglePageApplicationAdvancedDemoPage(props: SinglePageApplicationAdvancedDemoPageProps) =
+let nameSection (props: Name) =
     let req = React.useContext requestContext
     React.fragment [
-        Html.h3 "Advanced Single Page Application"
         Html.h4 [ prop.text "Name"; prop.id "setName" ]
+
+        Html.p "In this section we're using a form to update the name. The form is submitted to the universal route handler and ultimately to the the server using the GraphQL mutation. This is followed by an update to either the DOM or the HTML response, depending on the context. The anchor ID is used to scroll to the correct section of the page after the page reloads for when JavaScript is disabled."
 
         let name = props.name
         let nameError = props.nameError
@@ -63,8 +64,15 @@ let SinglePageApplicationAdvancedDemoPage(props: SinglePageApplicationAdvancedDe
 
         nameComponentCodeBlock
         nameHandlerCodeBlock
+    ]
 
+[<ReactComponent>]
+let colorSection (props: Color) = 
+    let req = React.useContext requestContext
+    React.fragment [
         Html.h4 [ prop.text "Color"; prop.id "setColor" ]
+
+        Html.p "This section follows the same basic pattern but uses FormButton components instead of a Form component. The interaction is still founded on the Form post but with a convenient button component that simplifies the process. Again, notice the use of the query parameters in the URL to drive the error handling. This is a key part of the artchitecture that allows for multiple sections of the page to maintain their state independently."
 
         let color = props.color
         let colorError = props.colorError
@@ -85,8 +93,15 @@ let SinglePageApplicationAdvancedDemoPage(props: SinglePageApplicationAdvancedDe
 
         colorComponentCodeBlock
         colorHandlerCodeBlock
+    ]
 
+[<ReactComponent>]
+let nameAndEmailSection (props: InputNameAndEmail) =
+    let req = React.useContext requestContext
+    React.fragment [
         Html.h4 [ prop.text "Name and Email"; prop.id "setNameAndEmail" ]
+
+        Html.p "This section demonstrates how to handle multiple form inputs with multiple validation requirements. The form is again submitted to the universal route handler. For demonstratinon purposes this route handler does nothing beside handle and report validation errors."
 
         let inputName = props.inputName
         let inputNameErrors = props.inputNameErrors
@@ -115,6 +130,29 @@ let SinglePageApplicationAdvancedDemoPage(props: SinglePageApplicationAdvancedDe
 
         nameAndEmailComponentCodeBlock
         nameAndEmailHandlerCodeBlock
+    ]
+
+[<ReactComponent>]
+let SinglePageApplicationAdvancedDemoPage(props: SinglePageApplicationAdvancedDemoPageProps) =
+    let req = React.useContext requestContext
+    React.fragment [
+        Html.h3 "Advanced Single Page Application"
+
+        Html.p "This section demonstrates how multiple sections of a page can be updated independently of each other. Each section has its own form and handler, and the page is updated without a full page reload. This uses a mixture of approaches but generally follows a pattern of utilizing query params form more ephemeral state like error validation messages along with a mechanism like GraphQL queries and mutations for more persistent storage. By utilizing persistent storage on the server and query params on the client this approach allows for these interactions to continue to work without JavaScript enabled."
+        
+        nameSection { name = props.name; nameError = props.nameError}
+
+        colorSection { color = props.color; colorError = props.colorError }
+
+        nameAndEmailSection { inputName = props.inputName; inputEmail = props.inputEmail; inputNameErrors = props.inputNameErrors; inputEmailErrors = props.inputEmailErrors }
+
+        Html.p "In the full code for the current page you'll see that we've encapsulated the components and route handlers into a single file using a single Express router that is later mounted onto our main application in a pattern that should seem very familiar to developers. Experienced with React."
+
+        Html.p "In the next section we will see the benefits of this architecture and how it can be used to create a separation of concerns between updating a UI based on user actions and then tracking those interactions."
+
+        Html.p [
+          req.Link {| href = "/analytics-router"; children = "Next: Analytics Router" |}
+        ]
 
         Html.h4 "Full Code For Current Page"
 
