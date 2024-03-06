@@ -138,7 +138,7 @@ let SinglePageApplicationAdvancedDemoPage(props: SinglePageApplicationAdvancedDe
     React.fragment [
         Html.h3 "Advanced Single Page Application"
 
-        Html.p "This section demonstrates how multiple sections of a page can be updated independently of each other. Each section has its own form and handler, and the page is updated without a full page reload. This uses a mixture of approaches but generally follows a pattern of utilizing query params form more ephemeral state like error validation messages along with a mechanism like GraphQL queries and mutations for more persistent storage. By utilizing persistent storage on the server and query params on the client this approach allows for these interactions to continue to work without JavaScript enabled."
+        Html.p "This section demonstrates how multiple sections of a page can be updated independently of each other. Each section has its own form and handler, and the page is updated without a full page reload. This uses a mixture of approaches but generally follows a pattern of utilizing query params for more ephemeral state like error validation messages along with a mechanism like GraphQL queries and mutations for more persistent storage. This approach allows for these interactions to continue to work without JavaScript enabled."
         
         nameSection { name = props.name; nameError = props.nameError}
 
@@ -146,7 +146,7 @@ let SinglePageApplicationAdvancedDemoPage(props: SinglePageApplicationAdvancedDe
 
         nameAndEmailSection { inputName = props.inputName; inputEmail = props.inputEmail; inputNameErrors = props.inputNameErrors; inputEmailErrors = props.inputEmailErrors }
 
-        Html.p "In the full code for the current page you'll see that we've encapsulated the components and route handlers into a single file using a single Express router that is later mounted onto our main application in a pattern that should seem very familiar to developers. Experienced with React."
+        Html.p "In the full code for the current page you'll see that we've encapsulated the components and route handlers into a single file using a single Express router that is later mounted onto our main application in a pattern that should seem very familiar to developers experienced with ExpressJS."
 
         Html.p "In the next section we will see the benefits of this architecture and how it can be used to create a separation of concerns between updating a UI based on user actions and then tracking those interactions."
 
