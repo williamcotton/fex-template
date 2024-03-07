@@ -22,7 +22,7 @@ type ExpressReq =
   abstract member secure : bool
   abstract member xhr : bool
   abstract member status : int
-  abstract member gql : string -> obj -> obj -> JS.Promise<obj>
+  abstract member gql : string -> obj -> obj -> JS.Promise<'T>
   abstract member session : obj
   abstract member fetchJson : string -> obj -> obj -> JS.Promise<{| text: unit -> JS.Promise<string>; json: unit -> JS.Promise<obj> |}>
 
@@ -46,7 +46,7 @@ type ExpressApp =
   abstract member ``use``: (ExpressReq -> ExpressRes -> (unit -> unit) -> unit) -> unit
   abstract member ``use``: string * ExpressApp -> unit
 
-let gql (query: string) (variables: obj) (options: obj) (req: ExpressReq)  : JS.Promise<Result<obj, string>> =
+let gql (query: string) (variables: obj) (options: obj) (req: ExpressReq)  : JS.Promise<Result<'T, string>> =
   promise {
     try
       let! result = req.gql query variables options

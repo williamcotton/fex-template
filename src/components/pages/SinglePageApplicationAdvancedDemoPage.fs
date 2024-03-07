@@ -14,17 +14,6 @@ let router : unit -> ExpressApp = jsNative
 let SinglePageApplicationAdvancedDemoRouter = router()
 let private spa = SinglePageApplicationAdvancedDemoRouter
 
-type SinglePageApplicationAdvancedDemoPageProps = {
-    color : string
-    colorError : string
-    name : string
-    nameError : string
-    inputName : string
-    inputEmail : string
-    inputNameErrors : string array
-    inputEmailErrors : string array
-}
-
 type InputNameAndEmail = {
     inputName : string
     inputEmail : string
@@ -42,20 +31,23 @@ type Name = {
     nameError : string
 }
 
+type SinglePageApplicationAdvancedDemoPageProps = {
+    color : Color
+    name : Name
+    inputNameAndEmail : InputNameAndEmail
+}
+
 [<ReactComponent>]
-let nameSection (props: Name) =
+let nameSection props =
     let req = React.useContext requestContext
     React.fragment [
         Html.h4 [ prop.text "Name"; prop.id "setName" ]
 
         Html.p "In this section we're using a form to update the name. The form is submitted to the universal route handler and ultimately to the the server using the GraphQL mutation. This is followed by an update to either the DOM or the HTML response, depending on the context. The anchor ID is used to scroll to the correct section of the page after the page reloads for when JavaScript is disabled."
 
-        let name = props.name
-        let nameError = props.nameError
-
-        match nameError with
+        match props.nameError with
         | "invalid-name" -> Html.p "Please enter your name:"
-        | _ -> Html.p (sprintf "Hello, %s!" name)
+        | _ -> Html.p (sprintf "Hello, %s!" props.name)
 
         req.Form {| id = "setName"; baseAction = "/set-name#setName"; method = "post"; children = [
             Html.input [ prop.type' "text"; prop.key "name"; prop.name "name"; prop.placeholder "Name" ]
@@ -67,27 +59,24 @@ let nameSection (props: Name) =
     ]
 
 [<ReactComponent>]
-let colorSection (props: Color) = 
+let colorSection props = 
     let req = React.useContext requestContext
     React.fragment [
         Html.h4 [ prop.text "Color"; prop.id "setColor" ]
 
         Html.p "This section follows the same basic pattern but uses FormButton components instead of a Form component. The interaction is still founded on the Form post but with a convenient button component that simplifies the process. Again, notice the use of the query parameters in the URL to drive the error handling. This is a key part of the artchitecture that allows for multiple sections of the page to maintain their state independently."
 
-        let color = props.color
-        let colorError = props.colorError
-
         req.FormButton {| baseAction = "/set-color#setColor"; name = "color"; value = "red"; buttonText = "Red"|}
         req.FormButton {| baseAction = "/set-color#setColor"; name = "color"; value = "green"; buttonText = "Green"|}
         req.FormButton {| baseAction = "/set-color#setColor"; name = "color"; value = "blue"; buttonText = "Blue"|}
         req.FormButton {| baseAction = "/set-color#setColor"; name = "color"; value = "error"; buttonText = "Error"|}
 
-        match colorError with
+        match props.colorError with
         | "invalid-color" -> Html.p "Invalid color. Please select red, green, or blue."
         | _ -> null
 
         Html.div [
-            prop.style [ style.color color]
+            prop.style [ style.color props.color]
             prop.children [ Html.p "Click the buttons to change the color of this text." ]
         ]
 
@@ -96,24 +85,19 @@ let colorSection (props: Color) =
     ]
 
 [<ReactComponent>]
-let nameAndEmailSection (props: InputNameAndEmail) =
+let nameAndEmailSection props =
     let req = React.useContext requestContext
     React.fragment [
         Html.h4 [ prop.text "Name and Email"; prop.id "setNameAndEmail" ]
 
         Html.p "This section demonstrates how to handle multiple form inputs with multiple validation requirements. The form is again submitted to the universal route handler. For demonstratinon purposes this route handler does nothing beside handle and report validation errors."
 
-        let inputName = props.inputName
-        let inputNameErrors = props.inputNameErrors
-        let inputEmail = props.inputEmail
-        let inputEmailErrors = props.inputEmailErrors
-
         req.Form {| baseAction = "/set-name-and-email#setNameAndEmail"; method = "post"; children = [
             Html.div [
                 prop.className "form-group"
                 prop.children [
                     Html.label [ prop.htmlFor "inputName"; prop.text "Name" ]
-                    textInputFieldWithStringListError "inputName" "Name" inputName (Some inputNameErrors)
+                    textInputFieldWithStringListError "inputName" "Name" props.inputName (Some props.inputNameErrors)
                 ]
             ]
 
@@ -121,7 +105,7 @@ let nameAndEmailSection (props: InputNameAndEmail) =
                 prop.className "form-group"
                 prop.children [
                     Html.label [ prop.htmlFor "inputEmail"; prop.text "Email" ]
-                    textInputFieldWithStringListError "inputEmail" "Email" inputEmail (Some inputEmailErrors)
+                    textInputFieldWithStringListError "inputEmail" "Email" props.inputEmail (Some props.inputEmailErrors)
                 ]
             ]
 
@@ -133,20 +117,22 @@ let nameAndEmailSection (props: InputNameAndEmail) =
     ]
 
 [<ReactComponent>]
-let SinglePageApplicationAdvancedDemoPage(props: SinglePageApplicationAdvancedDemoPageProps) =
+let SinglePageApplicationAdvancedDemoPage props =
     let req = React.useContext requestContext
     React.fragment [
         Html.h3 "Advanced Single Page Application"
 
         Html.p "This section demonstrates how multiple sections of a page can be updated independently of each other. Each section has its own form and handler, and the page is updated without a full page reload. This uses a mixture of approaches but generally follows a pattern of utilizing query params for more ephemeral state like error validation messages along with a mechanism like GraphQL queries and mutations for more persistent storage. This approach allows for these interactions to continue to work without JavaScript enabled."
         
-        nameSection { name = props.name; nameError = props.nameError}
+        nameSection props.name
 
-        colorSection { color = props.color; colorError = props.colorError }
+        colorSection props.color
 
-        nameAndEmailSection { inputName = props.inputName; inputEmail = props.inputEmail; inputNameErrors = props.inputNameErrors; inputEmailErrors = props.inputEmailErrors }
+        nameAndEmailSection props.inputNameAndEmail
 
         Html.p "In the full code for the current page you'll see that we've encapsulated the components and route handlers into a single file using a single Express router that is later mounted onto our main application in a pattern that should seem very familiar to developers experienced with ExpressJS."
+
+        SPAUseCodeBlock
 
         Html.p "In the next section we will see the benefits of this architecture and how it can be used to create a separation of concerns between updating a UI based on user actions and then tracking those interactions."
 
@@ -170,18 +156,13 @@ spa.get("/", fun req res next ->
                   name { name }
               }
               " {||} {| cache = false |}
-            
+
         match response with
         | Ok response ->
             let props = {
-                color = response?color?color
-                colorError = req.query?colorError
-                name = response?name?name
-                nameError = req.query?nameError
-                inputName = req.query?inputName
-                inputEmail = req.query?inputEmail
-                inputNameErrors = req.query?inputNameErrors
-                inputEmailErrors = req.query?inputEmailErrors
+                color = { color = response?color?color; colorError = req.query?colorError }
+                name = { name = response?name?name; nameError = req.query?nameError }
+                inputNameAndEmail = { inputName = req.query?inputName; inputEmail = req.query?inputEmail; inputNameErrors = req.query?inputNameErrors; inputEmailErrors = req.query?inputEmailErrors }
             }
 
             SinglePageApplicationAdvancedDemoPage props
@@ -225,9 +206,8 @@ spa.post("/set-color", fun req res next ->
 )
 
 spa.post("/set-name-and-email", fun req res next ->
-    let requestBody = req.body
-    let inputName = requestBody?inputName
-    let inputEmail = requestBody?inputEmail
+    let inputName = req.body?inputName
+    let inputEmail = req.body?inputEmail
     
     let nameValidator fieldName =
         let msg = fun _ -> $"{fieldName} must be between 3 and 64 characters"
