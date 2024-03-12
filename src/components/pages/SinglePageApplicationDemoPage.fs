@@ -61,8 +61,8 @@ let QueryStringPostHandlerCodeBlock =
     let color : string = req.body?color
     match color with
     | "red" | "green" | "blue" -> 
-        res?redirectBack({| color = color |})
-    | _ -> res?redirectBack({| error = "invalid-color" |})
+        res?redirectBackWithNewQuery({| color = color |})
+    | _ -> res?redirectBackWithNewQuery({| error = "invalid-color" |})
 )""" 
     |}   
 
@@ -92,7 +92,7 @@ let GraphQLPostHandlerCodeBlock =
 
         match response with
         | Ok response ->
-            res.redirectBack()
+            res.redirectBackWithNewQuery()
         | Error message ->
             SinglePageApplicationDemoPage ({| gqlColor = ""; queryColor = ""; gqlError = message; qError = "" |})
             |> res.renderErrorComponent
@@ -216,9 +216,7 @@ spa.get("/", fun req res next ->
         match response with
         | Ok response -> 
             let gqlColor = response?color?color
-            consoleLog gqlColor
             let gqlName = response?name?name
-            consoleLog gqlName
             SinglePageApplicationDemoPage {| gqlName = gqlName; gqlColor = gqlColor; queryColor = queryColor; gqlError = gqlError; qError = qError |}
             |> res.renderComponent
         | Error message -> next()
@@ -235,13 +233,13 @@ spa.post("/set-color-gql", fun req  res next ->
 
         match response with
         | Ok response -> res.redirect("back")
-        | Error message -> res.redirectBackAndMergeQuery({| gqlError = message |})
+        | Error message -> res.redirectBackWithNewQuery({| gqlError = message |})
     } |> ignore
 )
 
 spa.post("/set-color-query", fun req res next ->
     let color : string = req.body?color
     match color with
-    | "red" | "green" | "blue" -> res?redirectBack({| color = color |})
-    | _ -> res?redirectBack({| qError = "invalid-color" |})
+    | "red" | "green" | "blue" -> res?redirectBackWithNewQuery({| color = color |})
+    | _ -> res?redirectBackWithNewQuery({| qError = "invalid-color" |})
 )

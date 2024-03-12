@@ -32,8 +32,8 @@ type ExpressRes =
   abstract member renderErrorComponent : ReactElement -> unit
   abstract member status : int -> unit
   abstract member redirect : string -> unit
-  abstract member redirectBack : obj -> unit
-  abstract member redirectBackAndMergeQuery : 'T -> unit
+  abstract member redirectBackWithNewQuery : obj -> unit
+  abstract member redirectBack : 'T -> unit
   abstract member navigate : string -> unit
   abstract member pageview : obj -> unit
   abstract member event : obj -> unit

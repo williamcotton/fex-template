@@ -61,11 +61,11 @@ export default ({ defaultTitle }) =>
 
     res.redirect = res.redirect.bind(res);
 
-    res.redirectBack = (query) => {
+    res.redirectBackWithNewQuery = (query) => {
       res.navigate(req.baseUrl, query);
     };
 
-    res.redirectBackAndMergeQuery = (query) => {
+    res.redirectBack = (query) => {
       const referrer = req.headers.referer;
       const referrerUrl = new URL(referrer);
       const referrerQuery = qs.parse(referrerUrl.search, {

@@ -34,7 +34,7 @@ let nameHandlerCodeBlock =
           | Ok response -> { nameError = ""; name = newName }
           | Error message -> { nameError = message; name = newName }
 
-        res.redirectBackAndMergeQuery<Name>(name)        
+        res.redirectBack<Name>(name)        
     } |> ignore
 )""" |}
 
@@ -112,7 +112,7 @@ let nameAndEmailHandlerCodeBlock =
 
           { inputNameErrors = inputNameErrors; inputEmailErrors = inputEmailErrors; inputName = inputName; inputEmail = inputEmail }
     
-    res.redirectBackAndMergeQuery<InputNameAndEmail>(inputNameAndEmail)
+    res.redirectBack<InputNameAndEmail>(inputNameAndEmail)
 )
 """ |}
 
@@ -132,7 +132,7 @@ let colorHandlerCodeBlock =
           | Ok response -> { colorError = ""; color = newColor}
           | Error message -> { colorError = message; color = newColor}
 
-        res.redirectBackAndMergeQuery<Color>(color)
+        res.redirectBack<Color>(color)
     } |> ignore
 )
 """ |}
@@ -329,7 +329,7 @@ spa.post("/set-name", fun req res next ->
           | Ok response -> { nameError = ""; name = newName }
           | Error message -> { nameError = message; name = newName }
 
-        res.redirectBackAndMergeQuery<Name>(name)        
+        res.redirectBack<Name>(name)        
     } |> ignore
 )
 
@@ -346,7 +346,7 @@ spa.post("/set-color", fun req res next ->
           | Ok response -> { colorError = ""; color = newColor}
           | Error message -> { colorError = message; color = newColor}
 
-        res.redirectBackAndMergeQuery<Color>(color)
+        res.redirectBack<Color>(color)
     } |> ignore
 )
 
@@ -381,5 +381,5 @@ spa.post("/set-name-and-email", fun req res next ->
 
           { inputNameErrors = inputNameErrors; inputEmailErrors = inputEmailErrors; inputName = inputName; inputEmail = inputEmail }
     
-    res.redirectBackAndMergeQuery<InputNameAndEmail>(inputNameAndEmail)
+    res.redirectBack<InputNameAndEmail>(inputNameAndEmail)
 )"""  |}

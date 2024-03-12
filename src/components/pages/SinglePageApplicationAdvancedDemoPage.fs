@@ -179,12 +179,15 @@ spa.post("/set-name", fun req res next ->
             |> gql "mutation ($name: String) { setName(inputName: $name) { success } }" 
                 {| name = newName |} {||}
 
-        let name =
+        let nameError =
           match response with
-          | Ok response -> { nameError = ""; name = newName }
-          | Error message -> { nameError = message; name = newName }
+          | Ok response -> ""
+          | Error message -> message
 
-        res.redirectBackAndMergeQuery<Name>(name)        
+        res.redirectBack<Name>({
+            name = newName
+            nameError = nameError
+        })        
     } |> ignore
 )
 
@@ -196,12 +199,15 @@ spa.post("/set-color", fun req res next ->
             |> gql "mutation ($color: String) { setColor(color: $color) { success } }" 
                 {| color = newColor |} {||}
 
-        let color = 
+        let colorError = 
           match response with
-          | Ok response -> { colorError = ""; color = newColor}
-          | Error message -> { colorError = message; color = newColor}
+          | Ok response -> ""
+          | Error message -> message
 
-        res.redirectBackAndMergeQuery<Color>(color)
+        res.redirectBack<Color>({
+            color = newColor
+            colorError = colorError
+        })
     } |> ignore
 )
 
@@ -222,19 +228,21 @@ spa.post("/set-name-and-email", fun req res next ->
         validate {
             let! inputName = nameValidator "Name" "inputName" inputName
             and! inputEmail = emailValidator "inputEmail" inputEmail
-
             return {| inputName = inputName; inputEmail = inputEmail |}
         }
     
-    let inputNameAndEmail = 
+    let (inputNameErrors, inputEmailErrors) = 
       match validatedInput with
-      | Ok _ -> 
-          { inputName = inputName; inputEmail = inputEmail; inputNameErrors = [||]; inputEmailErrors = [||] }
+      | Ok _ -> ([||], [||])
       | Error validationErrors ->
           let inputNameErrors = extractErrors validationErrors "inputName"
           let inputEmailErrors = extractErrors validationErrors "inputEmail"
-
-          { inputNameErrors = inputNameErrors; inputEmailErrors = inputEmailErrors; inputName = inputName; inputEmail = inputEmail }
+          (inputNameErrors, inputEmailErrors)
     
-    res.redirectBackAndMergeQuery<InputNameAndEmail>(inputNameAndEmail)
+    res.redirectBack<InputNameAndEmail>({
+        inputName = inputName
+        inputEmail = inputEmail
+        inputNameErrors = inputNameErrors
+        inputEmailErrors = inputEmailErrors
+    })
 )

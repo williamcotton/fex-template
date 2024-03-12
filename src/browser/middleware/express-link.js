@@ -21,12 +21,11 @@ export default () => (req, res, next) => {
 
   res.redirect = res.redirect.bind(res);
 
-  res.redirectBack = (query) => {
+  res.redirectBackWithNewQuery = (query) => {
     res.navigate(req.baseUrl, query, true);
   };
 
-  res.redirectBackAndMergeQuery = (query) => {
-    console.log("req.headers", req.headers);
+  res.redirectBack = (query) => {
     const referrer = req.headers.referer;
     const referrerUrl = new URL(referrer);
     const referrerQuery = qs.parse(referrerUrl.search, { ignoreQueryPrefix: true });
