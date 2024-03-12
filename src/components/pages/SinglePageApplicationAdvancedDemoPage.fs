@@ -17,18 +17,18 @@ let private spa = SinglePageApplicationAdvancedDemoRouter
 type InputNameAndEmail = {
     inputName : string
     inputEmail : string
-    inputNameErrors : string array
-    inputEmailErrors : string array
+    inputNameErrors : string array option
+    inputEmailErrors : string array option
 }
 
 type Color = {
     color : string
-    colorError : string
+    colorError : string option
 }
 
 type Name = {
     name : string
-    nameError : string
+    nameError : string option
 }
 
 type SinglePageApplicationAdvancedDemoPageProps = {
@@ -46,7 +46,7 @@ let nameSection props =
         Html.p "In this section we're using a form to update the name. The form is submitted to the universal route handler and ultimately to the the server using the GraphQL mutation. This is followed by an update to either the DOM or the HTML response, depending on the context. The anchor ID is used to scroll to the correct section of the page after the page reloads for when JavaScript is disabled."
 
         match props.nameError with
-        | "invalid-name" -> Html.p "Please enter your name:"
+        | Some "invalid-name" -> Html.p "Please enter your name:"
         | _ -> Html.p (sprintf "Hello, %s!" props.name)
 
         req.Form {| id = "setName"; baseAction = "/set-name#setName"; method = "post"; children = [
@@ -72,7 +72,7 @@ let colorSection props =
         req.FormButton {| baseAction = "/set-color#setColor"; name = "color"; value = "error"; buttonText = "Error"|}
 
         match props.colorError with
-        | "invalid-color" -> Html.p "Invalid color. Please select red, green, or blue."
+        | Some "invalid-color" -> Html.p "Invalid color. Please select red, green, or blue."
         | _ -> null
 
         Html.div [
@@ -97,7 +97,7 @@ let nameAndEmailSection props =
                 prop.className "form-group"
                 prop.children [
                     Html.label [ prop.htmlFor "inputName"; prop.text "Name" ]
-                    textInputFieldWithStringListError "inputName" "Name" props.inputName (Some props.inputNameErrors)
+                    textInputFieldWithStringListError "inputName" "Name" props.inputName props.inputNameErrors
                 ]
             ]
 
@@ -105,7 +105,7 @@ let nameAndEmailSection props =
                 prop.className "form-group"
                 prop.children [
                     Html.label [ prop.htmlFor "inputEmail"; prop.text "Email" ]
-                    textInputFieldWithStringListError "inputEmail" "Email" props.inputEmail (Some props.inputEmailErrors)
+                    textInputFieldWithStringListError "inputEmail" "Email" props.inputEmail props.inputEmailErrors
                 ]
             ]
 
@@ -181,8 +181,8 @@ spa.post("/set-name", fun req res next ->
 
         let nameError =
           match response with
-          | Ok response -> ""
-          | Error message -> message
+          | Ok response -> None
+          | Error message -> Some message
 
         res.redirectBack<Name>({
             name = newName
@@ -201,8 +201,8 @@ spa.post("/set-color", fun req res next ->
 
         let colorError = 
           match response with
-          | Ok response -> ""
-          | Error message -> message
+          | Ok response -> None
+          | Error message -> Some message
 
         res.redirectBack<Color>({
             color = newColor
@@ -233,11 +233,11 @@ spa.post("/set-name-and-email", fun req res next ->
     
     let (inputNameErrors, inputEmailErrors) = 
       match validatedInput with
-      | Ok _ -> ([||], [||])
+      | Ok _ -> None, None
       | Error validationErrors ->
           let inputNameErrors = extractErrors validationErrors "inputName"
           let inputEmailErrors = extractErrors validationErrors "inputEmail"
-          (inputNameErrors, inputEmailErrors)
+          (Some inputNameErrors, Some inputEmailErrors)
     
     res.redirectBack<InputNameAndEmail>({
         inputName = inputName

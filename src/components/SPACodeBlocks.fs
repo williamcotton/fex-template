@@ -162,18 +162,18 @@ let private spa = SinglePageApplicationAdvancedDemoRouter
 type InputNameAndEmail = {
     inputName : string
     inputEmail : string
-    inputNameErrors : string array
-    inputEmailErrors : string array
+    inputNameErrors : string array option
+    inputEmailErrors : string array option
 }
 
 type Color = {
     color : string
-    colorError : string
+    colorError : string option
 }
 
 type Name = {
     name : string
-    nameError : string
+    nameError : string option
 }
 
 type SinglePageApplicationAdvancedDemoPageProps = {
@@ -191,7 +191,7 @@ let nameSection props =
         Html.p "In this section we're using a form to update the name. The form is submitted to the universal route handler and ultimately to the the server using the GraphQL mutation. This is followed by an update to either the DOM or the HTML response, depending on the context. The anchor ID is used to scroll to the correct section of the page after the page reloads for when JavaScript is disabled."
 
         match props.nameError with
-        | "invalid-name" -> Html.p "Please enter your name:"
+        | Some "invalid-name" -> Html.p "Please enter your name:"
         | _ -> Html.p (sprintf "Hello, %s!" props.name)
 
         req.Form {| id = "setName"; baseAction = "/set-name#setName"; method = "post"; children = [
@@ -217,7 +217,7 @@ let colorSection props =
         req.FormButton {| baseAction = "/set-color#setColor"; name = "color"; value = "error"; buttonText = "Error"|}
 
         match props.colorError with
-        | "invalid-color" -> Html.p "Invalid color. Please select red, green, or blue."
+        | Some "invalid-color" -> Html.p "Invalid color. Please select red, green, or blue."
         | _ -> null
 
         Html.div [
@@ -242,7 +242,7 @@ let nameAndEmailSection props =
                 prop.className "form-group"
                 prop.children [
                     Html.label [ prop.htmlFor "inputName"; prop.text "Name" ]
-                    textInputFieldWithStringListError "inputName" "Name" props.inputName (Some props.inputNameErrors)
+                    textInputFieldWithStringListError "inputName" "Name" props.inputName props.inputNameErrors
                 ]
             ]
 
@@ -250,7 +250,7 @@ let nameAndEmailSection props =
                 prop.className "form-group"
                 prop.children [
                     Html.label [ prop.htmlFor "inputEmail"; prop.text "Email" ]
-                    textInputFieldWithStringListError "inputEmail" "Email" props.inputEmail (Some props.inputEmailErrors)
+                    textInputFieldWithStringListError "inputEmail" "Email" props.inputEmail props.inputEmailErrors
                 ]
             ]
 
@@ -324,12 +324,15 @@ spa.post("/set-name", fun req res next ->
             |> gql "mutation ($name: String) { setName(inputName: $name) { success } }" 
                 {| name = newName |} {||}
 
-        let name =
+        let nameError =
           match response with
-          | Ok response -> { nameError = ""; name = newName }
-          | Error message -> { nameError = message; name = newName }
+          | Ok response -> None
+          | Error message -> Some message
 
-        res.redirectBack<Name>(name)        
+        res.redirectBack<Name>({
+            name = newName
+            nameError = nameError
+        })        
     } |> ignore
 )
 
@@ -341,12 +344,15 @@ spa.post("/set-color", fun req res next ->
             |> gql "mutation ($color: String) { setColor(color: $color) { success } }" 
                 {| color = newColor |} {||}
 
-        let color = 
+        let colorError = 
           match response with
-          | Ok response -> { colorError = ""; color = newColor}
-          | Error message -> { colorError = message; color = newColor}
+          | Ok response -> None
+          | Error message -> Some message
 
-        res.redirectBack<Color>(color)
+        res.redirectBack<Color>({
+            color = newColor
+            colorError = colorError
+        })
     } |> ignore
 )
 
@@ -367,19 +373,21 @@ spa.post("/set-name-and-email", fun req res next ->
         validate {
             let! inputName = nameValidator "Name" "inputName" inputName
             and! inputEmail = emailValidator "inputEmail" inputEmail
-
             return {| inputName = inputName; inputEmail = inputEmail |}
         }
     
-    let inputNameAndEmail = 
+    let (inputNameErrors, inputEmailErrors) = 
       match validatedInput with
-      | Ok _ -> 
-          { inputName = inputName; inputEmail = inputEmail; inputNameErrors = [||]; inputEmailErrors = [||] }
+      | Ok _ -> None, None
       | Error validationErrors ->
           let inputNameErrors = extractErrors validationErrors "inputName"
           let inputEmailErrors = extractErrors validationErrors "inputEmail"
-
-          { inputNameErrors = inputNameErrors; inputEmailErrors = inputEmailErrors; inputName = inputName; inputEmail = inputEmail }
+          (Some inputNameErrors, Some inputEmailErrors)
     
-    res.redirectBack<InputNameAndEmail>(inputNameAndEmail)
+    res.redirectBack<InputNameAndEmail>({
+        inputName = inputName
+        inputEmail = inputEmail
+        inputNameErrors = inputNameErrors
+        inputEmailErrors = inputEmailErrors
+    })
 )"""  |}
