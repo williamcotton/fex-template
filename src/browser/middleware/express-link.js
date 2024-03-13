@@ -2,11 +2,11 @@
 
 import qs from "qs";
 
-const { expressLink } = window;
-
-const { defaultTitle } = expressLink;
-
 export default () => (req, res, next) => {
+  const appContainer = document.querySelector("#app");
+  var expressLink = JSON.parse(appContainer.dataset.expresslink);
+  var defaultTitle = expressLink.defaultTitle;
+
   Object.keys(expressLink).forEach((key) => (req[key] = expressLink[key])); // eslint-disable-line no-return-assign
 
   req.renderDocument = ({ title }) => {

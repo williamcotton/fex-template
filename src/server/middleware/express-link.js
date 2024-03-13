@@ -24,10 +24,7 @@ function renderDocument({
   <meta name="description" content="${description || title || defaultTitle}">
 </head>
 <body>
-  <div id="app">${renderedContent}</div>
-  <script type="text/javascript" charset="utf-8">
-    window.expressLink = ${JSON.stringify(expressLink)};
-  </script>
+  <div id="app" data-expresslink='${JSON.stringify(expressLink)}'>${renderedContent}</div>
   ${scriptTag}
 </body>
 </html>
