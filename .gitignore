@@ -54,3 +54,6 @@ bin/
 *.fs.js
 .fake
 .config/
+
+# Source maps
+*.js.map

@@ -50,51 +50,27 @@ let formatDateString inputDate =
     sprintf "%s %s, %d" monthName dayWithOrdinal parsedDate.Year
 
 let textInputFieldWithError fieldName placeholder (defaultValue: string) (errors : Map<string, string list>) =
-    consoleLog errors
-
-    // Function to check if there are any errors for the given fieldName
     let hasError fieldName = errors.ContainsKey(fieldName)
-
-    consoleLog (fieldName, hasError fieldName)
-
-    // Function to get the error messages for the given fieldName. If there are errors, it returns a list of Html.p elements, each containing an error message.
-    let getErrorElements fieldName =
-        if hasError fieldName then
-            errors.[fieldName]
-            |> List.map (fun errorMsg -> Html.p [ prop.text errorMsg; prop.className "error" ])
-        else
-            []
-
-    // If there are errors for the fieldName, create a fragment containing the input field (with an "error" class) and all associated error messages.
-    // Otherwise, create a single input field without the "error" class.
     if hasError fieldName then 
         React.fragment [
             Html.input [ prop.type' "text"; prop.key fieldName; prop.name fieldName; prop.placeholder placeholder; prop.className "error"; prop.defaultValue defaultValue ]
-            yield! getErrorElements fieldName
+            yield! errors.[fieldName] |> List.map (fun errorMsg -> Html.p [ prop.text errorMsg; prop.className "error" ])
         ]
     else
         Html.input [ prop.type' "text"; prop.key fieldName; prop.name fieldName; prop.placeholder placeholder; prop.defaultValue defaultValue ]
 
-let textInputFieldWithStringListError fieldName placeholder (defaultValue: string) (errors : string array option) =
+let textInputFieldWithStringListError fieldName placeholder (defaultValue: string) (errors : string array option) (messageMapping : string -> string) =
     let errors = defaultArg errors [||]
     let hasNoErrors = Array.isEmpty errors
-
-    // Function to get the error messages for the given fieldName. If there are errors, it returns a list of Html.p elements, each containing an error message.
-    let getErrorElements =
-        if hasNoErrors then
-            [||]
-        else
-            errors
-            |> Array.map (fun errorMsg -> Html.p [ prop.text errorMsg; prop.className "error" ])
-
-    // If there are errors for the fieldName, create a fragment containing the input field (with an "error" class) and all associated error messages.
-    // Otherwise, create a single input field without the "error" class.
     if hasNoErrors then 
         Html.input [ prop.type' "text"; prop.name fieldName; prop.placeholder placeholder; prop.defaultValue defaultValue ]
     else
         React.fragment [
             Html.input [ prop.type' "text"; prop.name fieldName; prop.placeholder placeholder; prop.className "error"; prop.defaultValue defaultValue ]
-            yield! getErrorElements
+            yield! errors |> Array.map (fun errorType ->
+                let errorMsg = messageMapping errorType
+                Html.p [ prop.text errorMsg; prop.className "error" ]
+            )
         ]
 
 let extractErrors (validationErrors : ValidationErrors) fieldName =

@@ -73,10 +73,10 @@ let colorSection props =
 
         match props.colorError with
         | Some "invalid-color" -> Html.p "Invalid color. Please select red, green, or blue."
-        | _ -> null
+        | _ -> React.fragment []
 
         Html.div [
-            prop.style [ style.color props.color]
+            prop.style [ style.color props.color ]
             prop.children [ Html.p "Click the buttons to change the color of this text." ]
         ]
 
@@ -97,7 +97,10 @@ let nameAndEmailSection props =
                 prop.className "form-group"
                 prop.children [
                     Html.label [ prop.htmlFor "inputName"; prop.text "Name" ]
-                    textInputFieldWithStringListError "inputName" "Name" props.inputName props.inputNameErrors
+                    let messageMapping = function
+                        | "invalid-length" -> "Name must be between 3 and 64 characters."
+                        | _ -> "Unknown error"
+                    textInputFieldWithStringListError "inputName" "Name" props.inputName props.inputNameErrors messageMapping
                 ]
             ]
 
@@ -105,7 +108,11 @@ let nameAndEmailSection props =
                 prop.className "form-group"
                 prop.children [
                     Html.label [ prop.htmlFor "inputEmail"; prop.text "Email" ]
-                    textInputFieldWithStringListError "inputEmail" "Email" props.inputEmail props.inputEmailErrors
+                    let messageMapping = function
+                        | "invalid-length" -> "Email must be between 7 and 256 characters."
+                        | "invalid-email" -> "Please provide a valid email address."
+                        | _ -> "Unknown error"
+                    textInputFieldWithStringListError "inputEmail" "Email" props.inputEmail props.inputEmailErrors messageMapping
                 ]
             ]
 
@@ -151,7 +158,7 @@ spa.get("/", fun req res next ->
             req 
             |> gql 
               "
-              query { 
+              query {
                   color { color } 
                   name { name }
               }
@@ -215,18 +222,17 @@ spa.post("/set-name-and-email", fun req res next ->
     let inputName = req.body?inputName
     let inputEmail = req.body?inputEmail
     
-    let nameValidator fieldName =
-        let msg = fun _ -> $"{fieldName} must be between 3 and 64 characters"
-        Check.WithMessage.String.betweenLen 3 64 msg
+    let nameValidator =
+        Check.WithMessage.String.betweenLen 3 64 (fun _ -> "invalid-length")
 
     let emailValidator =
-        ValidatorGroup(Check.WithMessage.String.betweenLen 7 256 (fun _ -> "Email must be between 7 and 256 characters"))                                                  
-            .And(Check.WithMessage.String.pattern @"[^@]+@[^\.]+\..+" (fun _ -> "Please provide a valid email address"))
+        ValidatorGroup(Check.WithMessage.String.betweenLen 7 256 (fun _ -> "invalid-length"))                                                  
+            .And(Check.WithMessage.String.pattern @"[^@]+@[^\.]+\..+" (fun _ -> "invalid-email"))
             .Build()
 
     let validatedInput =  
         validate {
-            let! inputName = nameValidator "Name" "inputName" inputName
+            let! inputName = nameValidator "inputName" inputName
             and! inputEmail = emailValidator "inputEmail" inputEmail
             return {| inputName = inputName; inputEmail = inputEmail |}
         }

@@ -1,21 +1,29 @@
-import { graphql } from 'graphql';
+import { graphql } from "graphql";
 
 class HTTPError extends Error {
   constructor(statusCode, ...params) {
     super(...params);
-    this.name = 'HTTPError';
+    this.name = "HTTPError";
     this.statusCode = statusCode;
   }
 }
 
-const cacheKey = (query, variables) =>
-  `${query}-(${variables ? JSON.stringify(variables) : ""})`;
+const cacheKey = (source, variableValues) =>
+  `${source}-(${variableValues ? JSON.stringify(variableValues) : ""})`;
 
-export default ({ schema, rootValue }) => (req, res, next) => {
-    req.gql = async (query, variables, options = {}) => {
-      const isMutation = /^mutation/.test(query);
-      const key = cacheKey(query, variables);
-      const response = await graphql(schema, query, rootValue, req, variables);
+export default ({ schema, rootValue }) =>
+  (req, res, next) => {
+    req.gql = async (source, variableValues) => {
+      const isMutation = /^mutation/.test(source);
+      const key = cacheKey(source, variableValues);
+      const contextValue = req;
+      const response = await graphql({
+        schema,
+        source,
+        rootValue,
+        contextValue,
+        variableValues,
+      });
       if (!isMutation) res.cacheQuery(key, response);
       const { data, errors } = response;
       if (errors) {
@@ -23,11 +31,10 @@ export default ({ schema, rootValue }) => (req, res, next) => {
         throw new HTTPError(statusCode, errors[0].message);
       }
       req.dataQuery = {
-        type: "graphql",
         data,
         errors,
-        query,
-        variables,
+        source,
+        variableValues,
       };
       return data;
     };
